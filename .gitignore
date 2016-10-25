@@ -1,0 +1,5 @@
+node_modules/*
+conf.json
+*.log
+cachedb_no.js
+cachedb_yes.js
