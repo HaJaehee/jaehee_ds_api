@@ -19,7 +19,8 @@
     "socket.io": "1.4.4",
     "coap": "0.12.1",
     "kalmanjs": "1.0.0-beta",
-    "pg-promise": "3.2.6" 
-    
+    "pg-promise": "3.2.6", 
+    "bluebird": "*",
+    "request": "*"
   }
 }
