@@ -88,7 +88,10 @@ exports.configure = function (app) {
 		
 	});
 	
-	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.del('/thing/:thingname', app.oauth.authorise(), function (req, res){
 		Thing.get(req.params.thingname, function (err, thing){
 			if (err) {
@@ -103,6 +106,10 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.get('/user/:username/thing/:thingname/have', app.oauth.authorise(), function (req, res){
 		Thing.isOwner(req.params.username, req.params.thingname, function(err, results){
 			if(err) {
@@ -117,6 +124,10 @@ exports.configure = function (app) {
 		});
 	});
 
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.get('/user/:username/own', app.oauth.authorise(), function (req, res){
 		User.getOwn(req.params.username, function (err, things){
 			if(err) {
@@ -126,6 +137,10 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.post('/user/:username/own', app.oauth.authorise(), function (req, res){
 		Thing.create({'thingname':req.body.thingname}, function(err1, thing){
 			if(err1){
@@ -151,6 +166,10 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.get('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		User.getManage(req.params.username, function (err, groups){
 			if(err) {
@@ -160,7 +179,10 @@ exports.configure = function (app) {
 		});
 	});
 	
-
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.post('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		var groupname = req.body.groupname;
 		if(groupname.indexOf(req.params.username+':') !== 0){
@@ -211,6 +233,10 @@ exports.configure = function (app) {
 	});
 
 
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.get('/group/:groupname/join', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function (err, group){
 			group.getMemberAndOthers(function (err, users, others){
@@ -222,6 +248,10 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.get('/group/:groupname/other', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function (err, group){
 			group.getMemberAndOthers(function (err, users, others){
@@ -233,6 +263,10 @@ exports.configure = function (app) {
 		});
 	});
 
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.post('/group/:groupname/join', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function(err1, group){
 			if(err1) {
@@ -253,6 +287,10 @@ exports.configure = function (app) {
 		
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.post('/group/:groupname/unjoin', app.oauth.authorise(), function (req, res){
 
 		Group.get(req.params.groupname, function(err1, group){
@@ -541,6 +579,10 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
 	app.post('/register', app.oauth.authorise(), function(req, res){
 		auth.getUserbyToken(req.oauth.bearerToken.accessToken, function(err, results){
 			if(err){
@@ -591,6 +633,7 @@ exports.configure = function (app) {
 			});
 		});
 	});
+	
 	app.get('/thing/:thingname/latest', app.oauth.authorise(), function(req, res){
 		auth.getUserbyToken(req.oauth.bearerToken.accessToken, function(err, results){
 			if(err){

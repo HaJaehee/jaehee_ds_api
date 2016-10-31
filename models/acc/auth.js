@@ -206,7 +206,7 @@ model.getRefreshToken = function (bearerToken, callback) {
 };
 
 // This will very much depend on your setup, I wouldn't advise doing anything exactly like this but
-// it gives an example of how to use the method to resrict certain grant types
+// it gives an example of how to use the method to restrict certain grant types
 var authorizedClientIds = ['abc1', 'def2'];
 model.grantTypeAllowed = function (clientId, grantType, callback) {
   callback(false, true);
