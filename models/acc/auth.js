@@ -44,6 +44,10 @@ var db = pgp(cn); // database instance;
  * Required
  */
 
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getAccessToken = function (bearerToken, callback) {
 
 	var sco;
@@ -58,6 +62,7 @@ model.getAccessToken = function (bearerToken, callback) {
 			//console.log(data);
 			if(data.length){
 				var token = data[0];
+				console.log('getAccessToken'+JSON.stringify(data));
 				callback(null, {
 					accessToken: token.access_token,
 					clientId: token.client_id,
@@ -105,6 +110,10 @@ model.getAccessToken = function (bearerToken, callback) {
   });*/
 };
 
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getClient = function (clientId, clientSecret, callback) {
 
 	var sco;
@@ -121,7 +130,8 @@ model.getClient = function (clientId, clientSecret, callback) {
 		      if (clientSecret !== null && client.client_secret !== md5(clientSecret)) {
 		    	  return callback();
 		      }
-
+		      
+		      console.log('getClient'+JSON.stringify(data));
 		      // This object will be exposed in req.oauth.client
 		      callback(null, {
 		        clientId: client.client_id,
@@ -169,6 +179,10 @@ model.getClient = function (clientId, clientSecret, callback) {
   });*/
 };
 
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getRefreshToken = function (bearerToken, callback) {
 
 	var sco;
@@ -180,6 +194,7 @@ model.getRefreshToken = function (bearerToken, callback) {
 			        'WHERE refresh_token = $1', [bearerToken]);
 		})
 		.then(function (data){
+			console.log('getRefreshToken'+JSON.stringify(data));
 			callback(null, data.length? data[0]:false);
 		})
 	    .catch(function (error) {
@@ -212,6 +227,10 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
   callback(false, true);
 };
 
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.saveAccessToken = function (accessToken, clientId, expires, userId, callback) {
 
 	var sco;
@@ -248,6 +267,10 @@ model.saveAccessToken = function (accessToken, clientId, expires, userId, callba
   });*/
 };
 
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.saveRefreshToken = function (refreshToken, clientId, expires, userId, callback) {
 
 	var sco;
@@ -280,6 +303,7 @@ model.saveRefreshToken = function (refreshToken, clientId, expires, userId, call
     });
   });*/
 };
+
 
 /*
  * Required to support password grant type
@@ -351,7 +375,10 @@ model.getUserbyUsername = function (username, callback) {
   });*/
 };
 
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.saveUser = function (username, password, callback) {
 
 	var sco;
@@ -387,7 +414,10 @@ model.saveUser = function (username, password, callback) {
   });*/
 };
 
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.saveOauthClient = function (clientId, clientSecret, redirectUrl, callback) {
 
 	var sco;
@@ -485,7 +515,10 @@ model.deleteExpiredRefreshTokens = function (callback){
 		});
 	});*/
 };
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getUseridbyToken = function (token, callback){
 
 	var sco;
@@ -520,7 +553,10 @@ model.getUseridbyToken = function (token, callback){
 	});*/
 };
 
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getUsernamebyUserid = function (userid, callback){
 
 	var sco;
@@ -552,7 +588,10 @@ model.getUsernamebyUserid = function (userid, callback){
 		});
 	});*/
 };
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getUserbyToken = function (token, callback){
 	cachedb.loadCachedData(token, function(err, results){
 		if(results && JSON.parse(results).username){
@@ -582,7 +621,10 @@ model.getUserbyToken = function (token, callback){
 	});
 };
 
-
+/** jaehee modified
+ * 2016.10.31
+ * 
+ */ 
 model.getClientidAndToken = function (callback){
 	var sco;
 	
