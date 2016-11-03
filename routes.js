@@ -4,6 +4,7 @@ var bodyParser = require('body-parser'),
 	auth = require('./models/acc/auth'),
 	User = require('./models/acc/user'),
 	Thing = require('./models/acc/thing'),
+	EPCIS = require('./models/acc/epcis')
 	Group = require('./models/acc/group'),
 	Service = require('./models/acc/service'),
 	rest = require('./rest'),
@@ -33,7 +34,94 @@ exports.configure = function (app) {
 	
 	app.use(app.oauth.errorHandler());
 	
-	app.del('/thing'/*, app.oauth.authorise()*/, function (req, res){
+	/** Jaehee modified
+	 * 2016.10.31
+	 * 
+	 */ 
+	app.del('/epcis'/*, app.oauth.authorise()*/, function (req, res){
+		
+		EPCIS.delall(function(err){
+			if(err) {
+				return err;
+			}
+			res.send({result: "success"});
+			
+		});
+		
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.03
+	 * 
+	 */ 
+	app.del('/epcis/:epcisname', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function (err, epcis){
+			if (err) {
+				return res.send({error: err});
+			}
+			epcis.del(function(err){
+				if (err) {
+					return res.send({error: err});
+				}
+				res.send({result: "success"});
+			});
+		});
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.03
+	 * 
+	 */ 
+	app.get('/user/:username/possess', app.oauth.authorise(), function (req, res){
+		User.getPossess(req.params.username, function (err, epciss){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epciss:epciss});
+		});
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.03
+	 * 
+	 */ 
+	app.post('/user/:username/possess', app.oauth.authorise(), function (req, res){
+		EPCIS.create({'epcisname':req.body.epcisname}, function(err1, epcis){
+			if(err1){
+				res.send({ error : err1});
+				return;
+			}
+			User.get(req.params.username, function(err2, user){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				user.possess(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.03
+	 * 
+	 */ 
+	app.get('/user/:username/thing/:thingname/possess', app.oauth.authorise(), function (req, res){
+		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({possessor: results.result});
+		});
+	});
+	
+	//deprecated
+	/* 
+	app.del('/thing'//, app.oauth.authorise()
+						, function (req, res){
 		
 		Thing.delall(function(err){
 			if(err) {
@@ -45,7 +133,8 @@ exports.configure = function (app) {
 		
 	});
 	
-	app.del('/user'/*, app.oauth.authorise()*/, function (req, res){
+	app.del('/user'//, app.oauth.authorise()
+						, function (req, res){
 		
 		User.delall(function(err){
 			if(err) {
@@ -56,6 +145,7 @@ exports.configure = function (app) {
 		});
 		
 	});
+	
 	
 	app.get('/delall',function (req, res){
 		
@@ -76,6 +166,7 @@ exports.configure = function (app) {
 		
 	});
 	
+	
 	app.get('/delthing',function (req, res){
 		
 		Thing.delall(function(err){
@@ -87,11 +178,8 @@ exports.configure = function (app) {
 		});
 		
 	});
+	*/
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
 	app.del('/thing/:thingname', app.oauth.authorise(), function (req, res){
 		Thing.get(req.params.thingname, function (err, thing){
 			if (err) {
@@ -106,10 +194,6 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
 	app.get('/user/:username/thing/:thingname/have', app.oauth.authorise(), function (req, res){
 		Thing.isOwner(req.params.username, req.params.thingname, function(err, results){
 			if(err) {
@@ -124,10 +208,8 @@ exports.configure = function (app) {
 		});
 	});
 
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
+	
 	app.get('/user/:username/own', app.oauth.authorise(), function (req, res){
 		User.getOwn(req.params.username, function (err, things){
 			if(err) {
@@ -137,10 +219,8 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
+	
 	app.post('/user/:username/own', app.oauth.authorise(), function (req, res){
 		Thing.create({'thingname':req.body.thingname}, function(err1, thing){
 			if(err1){
@@ -166,10 +246,7 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
 	app.get('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		User.getManage(req.params.username, function (err, groups){
 			if(err) {
@@ -179,10 +256,6 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
 	app.post('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		var groupname = req.body.groupname;
 		if(groupname.indexOf(req.params.username+':') !== 0){
@@ -233,10 +306,6 @@ exports.configure = function (app) {
 	});
 
 
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
 	app.get('/group/:groupname/join', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function (err, group){
 			group.getMemberAndOthers(function (err, users, others){
@@ -248,10 +317,6 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
 	app.get('/group/:groupname/other', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function (err, group){
 			group.getMemberAndOthers(function (err, users, others){
@@ -263,10 +328,7 @@ exports.configure = function (app) {
 		});
 	});
 
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
 	app.post('/group/:groupname/join', app.oauth.authorise(), function (req, res){
 		Group.get(req.params.groupname, function(err1, group){
 			if(err1) {
@@ -287,10 +349,7 @@ exports.configure = function (app) {
 		
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
 	app.post('/group/:groupname/unjoin', app.oauth.authorise(), function (req, res){
 
 		Group.get(req.params.groupname, function(err1, group){
@@ -579,10 +638,7 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** jaehee modified
-	 * 2016.10.31
-	 * 
-	 */ 
+	
 	app.post('/register', app.oauth.authorise(), function(req, res){
 		auth.getUserbyToken(req.oauth.bearerToken.accessToken, function(err, results){
 			if(err){

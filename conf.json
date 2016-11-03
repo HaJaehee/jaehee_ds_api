@@ -3,16 +3,13 @@
     "PG_ID": "postgres",
     "PG_PW": "resl18519",
     "PG_ADDRESS": "143.248.55.44",
-    "PG_DB": "discovery_service",
+    "PG_DB": "epcis_ac",
     "NEO_ID": "neo4j",
     "NEO_PW": "resl18519",
     "NEO_ADDRESS": "143.248.55.44:7474",
     "MONGO_ADDRESS": "143.248.55.44:27017",
-    "MONGO_DBNAME": "discoveryservice",
-    "MONGO_COLLECTION": "documents6",
+    "MONGO_DBNAME": "epcis_ac",
+    "MONGO_COLLECTION": "documents_epcis",
     "DNS_ADDRESS": "8.8.8.8",
-    "REDIS_DEFAULT_EXPIRE": 1200,
-    "_comment1": "MONGO_ADDRESS: 143.248.56.222:20001",
-    "_comment2": "PG_ADDRESS: 143.248.56.222:5432",
-    "_comment3": "NEO_ADDRESS: 143.248.56.222:7474"
+    "REDIS_DEFAULT_EXPIRE": 1200
 }

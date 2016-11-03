@@ -1,6 +1,6 @@
 
 
-# DiscoveryServiceAPI
+# EPCIS Access Control Application Programming Interface
 
 
 
@@ -9,7 +9,9 @@
 
 
 ## Developing
-
+EPCIS Access Control Application Programming Interface Based on DiscoveryService Application Programming Interface.
+Jaehee Ha modified from DiscoveryService Application Programming Interface to EPCIS Access Control Application Programming Interface.
+2016.11.03
 
 
 ### Tools

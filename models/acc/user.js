@@ -1,8 +1,13 @@
 // user.js
 // User model logic.
+/**
+ * Jaehee modified
+ * 2016.11.03
+ */
 
 var neo4j = require('neo4j');
 var errors = require('./errors');
+var EPCIS = require('./epcis');
 var Thing = require('./thing');
 var Group = require('./group');
 var config = require('../../conf.json');
@@ -153,6 +158,10 @@ User.prototype.patch = function (props, callback) {
     });
 };
 
+/** Jaehee modified
+ * 2016.11.03
+ * 
+ */ 
 User.prototype.del = function (callback) {
     // Use a Cypher query to delete both this user and his/her following
     // relationships in one query and one network request:
@@ -164,7 +173,8 @@ User.prototype.del = function (callback) {
 	   'MATCH (user)-[:own]->(thing)',
 	   'MATCH (thing)-[:have]->(service)',
 	   'MATCH (user)-[:manage]->(group)',
-	   'DETACH DELETE user, thing, service, group'
+	   'MATCH (user)-[:possess]->(epcis)',
+	   'DETACH DELETE user, thing, service, group, epcis'
 	   
 	].join('\n');
 
@@ -221,6 +231,29 @@ User.prototype.unmanage = function (other, callback) {
     });
 };
 
+/** Jaehee modified
+ * 2016.11.03
+ * 
+ */ 
+User.prototype.possess = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:EPCIS{epcisname: {otherEPCISname}})',
+        'MERGE (user) -[rel:possess]-> (other)',
+    ].join('\n');
+
+    var params = {
+        thisUsername: this.username,
+        otherEPCISname: other.epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+};
 
 User.prototype.own = function (other, callback) {
     var query = [
@@ -232,6 +265,31 @@ User.prototype.own = function (other, callback) {
     var params = {
         thisUsername: this.username,
         otherThingname: other.thingname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+};
+
+/** Jaehee modified
+ * 2016.11.03
+ * 
+ */ 
+User.prototype.unpossess = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:EPCIS {epcisname: {otherEPCISname}})',
+        'MATCH (user) -[rel:possess]-> (other)',
+        'DELETE rel',
+    ].join('\n');
+
+    var params = {
+    	thisUsername: this.username,
+        otherEPCISname: other.epcisname,
     };
 
     db.cypher({
@@ -263,7 +321,6 @@ User.prototype.unown = function (other, callback) {
     });
 };
 
-
 User.get = function (username, callback) {
     var query = [
         'MATCH (user:User {username: {username}})',
@@ -291,6 +348,44 @@ User.get = function (username, callback) {
 };
 
 
+/** Jaehee modified
+ * 2016.11.03
+ * 
+ */ 
+User.getPossess = function (username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})-[:possess]->(epcis:EPCIS)',
+        'RETURN epcis', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epciss = [];
+
+        for (var i = 0; i < results.length; i++) {
+
+        	var epcis = new EPCIS(results[i]['epcis']);
+        	if(!thing.epcisname) {
+        		return callback("EPCIS exists, but its epcisname does not exist");
+        	}
+        	epciss.push(epcis.epcisname);
+        }
+
+        callback(null, epciss);
+    });
+};
 
 User.getOwn = function (username, callback) {
 
