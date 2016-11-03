@@ -11,5 +11,8 @@
     "MONGO_DBNAME": "epcis_ac",
     "MONGO_COLLECTION": "documents_epcis",
     "DNS_ADDRESS": "8.8.8.8",
+    "EPCIS_ADDRESS": "143.248.55.44:8080",
+    "EPCIS_CAPTURE_URL": "/epcis/Service/AccessEventCapture",
+    "EPCIS_QUERY_URL": "/epcis/Service/Poll/SimpleEventQuery?",
     "REDIS_DEFAULT_EXPIRE": 1200
 }

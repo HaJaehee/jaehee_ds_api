@@ -12,8 +12,14 @@ var bodyParser = require('body-parser'),
 	qs = require('querystring'),
 	Coap = require('./protocols/coap'),
 	dns = require('native-dns');
+	
 
 var config = require('./conf.json');
+var EPCIS_CaptureURL = config.EPCIS_CAPTURE_URL,
+	EPCIS_QueryURL = config.EPCIS_QUERY_URL,
+	EPCIS_Address = config.EPCIS_ADDRESS;
+var EPCIS_Capture_Address = "http://"+EPCIS_Address+EPCIS_CaptureURL,
+	EPCIS_Query_Address = "http://"+EPCIS_Address+EPCIS_QueryURL;
 
 
 exports.configure = function (app) {	
@@ -136,6 +142,34 @@ exports.configure = function (app) {
 						return res.send({error: err});
 					}
 					res.send({result: "success"});
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
+		});
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.04
+	 * To do
+	 */
+	app.post('/user/:username/epcis/:epcisname/capture', app.oauth.authorise(), function (req, res){
+		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			
+			if (results.result === 'yes')
+			{
+				var epcisevent = req.body.epcisevent;
+				rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
+					if (error) {
+						return res.send({error: error});
+					} else {
+						res.send({result: "success"});
+					}
 				});
 			}
 			else 
