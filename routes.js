@@ -109,12 +109,39 @@ exports.configure = function (app) {
 	 * 2016.11.03
 	 * 
 	 */ 
-	app.get('/user/:username/thing/:thingname/possess', app.oauth.authorise(), function (req, res){
+	app.get('/user/:username/epcis/:epcisname/possess', app.oauth.authorise(), function (req, res){
 		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
 			}		
 			res.send({possessor: results.result});
+		});
+	});
+	
+	/** Jaehee modified
+	 * 2016.11.04
+	 * 
+	 */
+	app.del('/delepcis/:epcisname', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.isPossessor(req.body.username, req.body.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			
+			if (results.result === 'yes')
+			{
+				EPCIS.del(req.body.username, req.body.epcisname, function (err){
+					if (err) {
+						return res.send({error: err});
+					}
+					res.send({result: "success"});
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
 		});
 	});
 	
@@ -193,6 +220,7 @@ exports.configure = function (app) {
 			});
 		});
 	});
+	
 	
 	app.get('/user/:username/thing/:thingname/have', app.oauth.authorise(), function (req, res){
 		Thing.isOwner(req.params.username, req.params.thingname, function(err, results){

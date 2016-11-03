@@ -153,7 +153,7 @@ Thing.prototype.patch = function (props, callback) {
     });
 };
 
-Thing.prototype.del = function (callback) {
+Thing.del = function (callback) {
     // Use a Cypher query to delete both this thing and his/her following
     // relationships in one query and one network request:
     // (Note that this'll still fail if there are any relationships attached

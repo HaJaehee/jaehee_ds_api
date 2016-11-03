@@ -377,7 +377,7 @@ User.getPossess = function (username, callback) {
         for (var i = 0; i < results.length; i++) {
 
         	var epcis = new EPCIS(results[i]['epcis']);
-        	if(!thing.epcisname) {
+        	if(!epcis.epcisname) {
         		return callback("EPCIS exists, but its epcisname does not exist");
         	}
         	epciss.push(epcis.epcisname);

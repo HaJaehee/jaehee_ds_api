@@ -156,25 +156,30 @@ EPCIS.prototype.patch = function (props, callback) {
     });
 };
 
-EPCIS.prototype.del = function (callback) {
+EPCIS.del = function (username, epcisname, callback) {
     // Use a Cypher query to delete both this EPCIS and his/her following
     // relationships in one query and one network request:
     // (Note that this'll still fail if there are any relationships attached
     // of any other types, which is good because we don't expect any.)
     var query = [
           'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
-          'DETACH DELETE epcis',
+          'MATCH (epcis)<-[rel:possess]-(user:User {username: {username}})',
+          'DELETE rel, epcis',
     ].join('\n');
 
     var params = {
-        epcisname: this.epcisname,
+        epcisname: epcisname,
+        username: username,
     };
 
     db.cypher({
         query: query,
         params: params,
-    }, function (err) {
-        callback(err);
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        return callback(null, {result: "success"});
     });
 };
 
@@ -273,9 +278,10 @@ EPCIS.isPossessor = function(username, epcisname, callback){
         'RETURN user',
     ].join('\n');
 
+    
     var params = {
         thisEPCISname: epcisname,
-        thisUsername: username,
+        thisUsername: username
     };
 
     db.cypher({
