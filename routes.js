@@ -40,7 +40,9 @@ exports.configure = function (app) {
 	
 	app.use(app.oauth.errorHandler());
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.10.31
 	 * 
 	 */ 
@@ -56,7 +58,9 @@ exports.configure = function (app) {
 		
 	});
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.03
 	 * 
 	 */ 
@@ -74,7 +78,9 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.03
 	 * 
 	 */ 
@@ -87,7 +93,11 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** Jaehee modified
+
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.03
 	 * 
 	 */ 
@@ -111,7 +121,9 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.03
 	 * 
 	 */ 
@@ -124,7 +136,199 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.get('/user/:username/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
+		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({subscriber: results.result});
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.05
+	 * TODO
+	 */ 
+	app.get('/user/:username/furnish', app.oauth.authorise(), function (req, res){
+		// TODO
+		User.getFurnish(req.params.username, function (err, epcisfurns){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurns:epcisfurns});
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.05
+	 * TODO
+	 */ 
+	app.post('/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			User.get(req.body.epcisfurnishername, function(err2, user){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				user.furnish(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * TODO
+	 */ 
+	app.get('/epcis/:epcisname/furnisher', app.oauth.authorise(), function (req, res){
+		// TODO
+		EPCIS.getFurnisher(req.params.epcisname, function (err, epcisfurnishers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurnishers:epcisfurnishers});
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * 
+	 */
+	app.del('/unfurnepcis/:epcisname/user/:epcisfurnishername', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.isFurnisher(req.params.epcisfurnishername, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			
+			if (results.result === 'yes')
+			{
+				EPCIS.unfurnish(req.params.epcisfurnishername, req.params.epcisname, function (err){
+					if (err) {
+						return res.send({error: err});
+					}
+					res.send({result: "success"});
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * TODO
+	 */ 
+	app.get('/user/:username/subscribe', app.oauth.authorise(), function (req, res){
+		// TODO
+		User.getSubscribe(req.params.username, function (err, epcissubss){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubss:epcissubss});
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * TODO
+	 */ 
+	app.post('/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			User.get(req.body.epcissubscribername, function(err2, user){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				user.subscribe(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * TODO
+	 */ 
+	app.get('/epcis/:epcisname/subscriber', app.oauth.authorise(), function (req, res){
+		// TODO
+		EPCIS.getSubscriber(req.params.epcisname, function (err, epcissubscribers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubscribers:epcissubscribers});
+		});
+	});
+	
+
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * 
+	 */
+	app.del('/unsubsepcis/:epcisname/user/:epcissubscribername', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.isSubscriber(req.params.epcissubscribername, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			
+			if (results.result === 'yes')
+			{
+				EPCIS.unsubscribe(req.params.epcissubscribername, req.params.epcisname, function (err){
+					if (err) {
+						return res.send({error: err});
+					}
+					res.send({result: "success"});
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
+		});
+	});
+	
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.04
 	 * 
 	 */
@@ -141,7 +345,13 @@ exports.configure = function (app) {
 					if (err) {
 						return res.send({error: err});
 					}
-					res.send({result: "success"});
+					rest.delOperation(EPCIS_Capture_Address, "" , req.body.epcisname, function (error, response) {
+						if (error) {
+							return res.send({error: error});
+						} else {
+							res.send({result: "success"});
+						}
+					});
 				});
 			}
 			else 
@@ -151,9 +361,11 @@ exports.configure = function (app) {
 		});
 	});
 	
-	/** Jaehee modified
+	/** 
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
 	 * 2016.11.04
-	 * To do
+	 *
 	 */
 	app.post('/user/:username/epcis/:epcisname/capture', app.oauth.authorise(), function (req, res){
 		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){

@@ -93,3 +93,45 @@ exports.getOperation = function (uri, operation, args, callback) {
 	
 };
 
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
+ * 2016.11.04
+ * TODO
+ */
+exports.delOperation = function (uri, operation, args, callback) {
+	if (operation === null) {
+		return callback("invalid input to executeOperation");
+	}
+
+	var operationReq = exports.getOperationRequest(uri, operation);
+	if(args){
+		operationReq.body = args;
+	}
+	//console.log(operationReq);
+	
+	request.del(operationReq, function (error, res, body){
+		if (error) {
+			return callback(error);
+		}
+		if (res.statusCode === 200) {
+			try {
+				//console.log(body);
+				var operationResponse = JSON.parse(body);
+				if(operationResponse.error){
+					return callback(operationResponse.error);
+				}
+				return callback(null, operationResponse);
+			} catch (e) {
+				return callback("invalid JSON returned for " + operation);
+			}
+		} else if (res.statusCode >= 401 && res.statusCode <= 403) {
+			return callback(null, null);
+		} else {
+			return callback("authentication failed, status code from rest api was " + res.statusCode);
+		}
+	});
+	
+	
+};
+

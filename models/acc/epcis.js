@@ -2,7 +2,10 @@
 // EPCIS model logic.
 /**
  * Jaehee modified from duplicated thing.js
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
+ * added subscription functionality
+ * 2016.11.04
  */
 var neo4j = require('neo4j');
 var errors = require('./errors');
@@ -42,7 +45,7 @@ EPCIS.VALIDATION_INFO = {
 
 // Public instance properties:
 
-// The EPCIS's gs1code, e.g. 'aseemk'.
+// The EPCIS prototype
 Object.defineProperty(EPCIS.prototype, 'epcisname', {
     get: function () { return this._node.properties['epcisname']; }
 });
@@ -163,8 +166,64 @@ EPCIS.del = function (username, epcisname, callback) {
     // of any other types, which is good because we don't expect any.)
     var query = [
           'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
-          'MATCH (epcis)<-[rel:possess]-(user:User {username: {username}})',
-          'DELETE rel, epcis',
+          'MATCH (epcis)<-[:possess]-(user:User {username: {username}})',
+          'OPTIONAL MATCH (epcis)<-[:subscribe]-(user:User)',
+          'OPTIONAL MATCH (epcis)<-[:furnish]-(user:User)',
+          'DETACH DELETE epcis',
+    ].join('\n');
+
+    var params = {
+        epcisname: epcisname,
+        username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        return callback(null, {result: "success"});
+    });
+};
+
+EPCIS.unfurnish = function (username, epcisname, callback) {
+    // Use a Cypher query to delete both this EPCIS and his/her following
+    // relationships in one query and one network request:
+    // (Note that this'll still fail if there are any relationships attached
+    // of any other types, which is good because we don't expect any.)
+    var query = [
+          'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
+          'MATCH (epcis)<-[rel:furnish]-(user:User {username: {username}})',
+          'DELETE rel',
+    ].join('\n');
+
+    var params = {
+        epcisname: epcisname,
+        username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        return callback(null, {result: "success"});
+    });
+};
+
+EPCIS.unsubscribe = function (username, epcisname, callback) {
+    // Use a Cypher query to delete both this EPCIS and his/her following
+    // relationships in one query and one network request:
+    // (Note that this'll still fail if there are any relationships attached
+    // of any other types, which is good because we don't expect any.)
+    var query = [
+          'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
+          'MATCH (epcis)<-[rel:subscribe]-(user:User {username: {username}})',
+          'DELETE rel',
     ].join('\n');
 
     var params = {
@@ -299,6 +358,63 @@ EPCIS.isPossessor = function(username, epcisname, callback){
     });	
 };
 
+EPCIS.isFurnisher = function(username, epcisname, callback){
+    var query = [
+        'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'MATCH (epcis)<-[:furnish]-(user:User {username: {thisUsername}})',
+        'RETURN user',
+    ].join('\n');
+
+    
+    var params = {
+        thisEPCISname: epcisname,
+        thisUsername: username
+    };
+
+    db.cypher({
+       query: query,
+       params: params,
+    }, function (err, results) {
+       if (err) {
+    	   return callback(err);
+       }
+       if(results.length>0){
+    	   return callback(null, {result: "yes"});
+       }
+       return callback(null, {result: "no"});
+       
+    });	
+};
+
+EPCIS.isSubscriber = function(username, epcisname, callback){
+    var query = [
+        'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'MATCH (epcis)<-[:subscribe]-(user:User {username: {thisUsername}})',
+        'RETURN user',
+    ].join('\n');
+
+    
+    var params = {
+        thisEPCISname: epcisname,
+        thisUsername: username
+    };
+
+    db.cypher({
+       query: query,
+       params: params,
+    }, function (err, results) {
+       if (err) {
+    	   return callback(err);
+       }
+       if(results.length>0){
+    	   return callback(null, {result: "yes"});
+       }
+       return callback(null, {result: "no"});
+       
+    });	
+};
+
+
 EPCIS.isAuthority = function(username, epcisname, callback){
 	cachedb.loadCachedData(username+':'+epcisname, function(err, results){
 		if(results && JSON.parse(results).authority){
@@ -348,6 +464,94 @@ EPCIS.isAuthority = function(username, epcisname, callback){
 			}
 		});
 	});	
+};
+
+EPCIS.get = function (epcisname, callback) {
+    var query = [
+        'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
+        'RETURN epcis',
+    ].join('\n');
+
+    var params = {
+        epcisname: epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        if (!results.length) {
+            err = new Error('No such epcis with epcisname: ' + epcisname);
+            return callback(err);
+        }
+        var epcis = new EPCIS(results[0]['epcis']);
+        callback(null, epcis);
+    });
+};
+
+EPCIS.getFurnisher = function (epcisname, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User)-[:furnish]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'RETURN user', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurnishers = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcisfurnisher = results[i].user.properties;
+        	epcisfurnishers.push(epcisfurnisher.username);
+        }
+
+        callback(null, epcisfurnishers);
+    });
+};
+
+EPCIS.getSubscriber = function (epcisname, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User)-[:subscribe]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'RETURN user', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcissubscribers = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcissubscriber = results[i].user.properties;
+        	epcissubscribers.push(epcissubscriber.username);
+        }
+
+        callback(null, epcissubscribers);
+    });
 };
 
 

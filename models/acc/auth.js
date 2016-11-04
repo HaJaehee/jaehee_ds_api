@@ -44,7 +44,9 @@ var db = pgp(cn); // database instance;
  * Required
  */
 
-/** jaehee modified
+/** 
+ * jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -110,7 +112,9 @@ model.getAccessToken = function (bearerToken, callback) {
   });*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -179,7 +183,9 @@ model.getClient = function (clientId, clientSecret, callback) {
   });*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -227,7 +233,9 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
   callback(false, true);
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -267,7 +275,9 @@ model.saveAccessToken = function (accessToken, clientId, expires, userId, callba
   });*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -375,7 +385,9 @@ model.getUserbyUsername = function (username, callback) {
   });*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -414,7 +426,9 @@ model.saveUser = function (username, password, callback) {
   });*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -515,7 +529,9 @@ model.deleteExpiredRefreshTokens = function (callback){
 		});
 	});*/
 };
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -553,7 +569,9 @@ model.getUseridbyToken = function (token, callback){
 	});*/
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -588,7 +606,9 @@ model.getUsernamebyUserid = function (userid, callback){
 		});
 	});*/
 };
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 
@@ -621,7 +641,9 @@ model.getUserbyToken = function (token, callback){
 	});
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.10.31
  * 
  */ 

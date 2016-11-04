@@ -2,6 +2,7 @@
 // User model logic.
 /**
  * Jaehee modified
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
  */
 
@@ -158,7 +159,9 @@ User.prototype.patch = function (props, callback) {
     });
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
  * 
  */ 
@@ -231,7 +234,9 @@ User.prototype.unmanage = function (other, callback) {
     });
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
  * 
  */ 
@@ -240,6 +245,58 @@ User.prototype.possess = function (other, callback) {
         'MATCH (user:User {username: {thisUsername}})',
         'MATCH (other:EPCIS{epcisname: {otherEPCISname}})',
         'MERGE (user) -[rel:possess]-> (other)',
+    ].join('\n');
+
+    var params = {
+        thisUsername: this.username,
+        otherEPCISname: other.epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+};
+
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
+ * 2016.11.05
+ * 
+ */ 
+User.prototype.furnish = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:EPCIS{epcisname: {otherEPCISname}})',
+        'MERGE (user) -[rel:furnish]-> (other)',
+    ].join('\n');
+
+    var params = {
+        thisUsername: this.username,
+        otherEPCISname: other.epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+};
+
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
+ * 2016.11.04
+ * 
+ */ 
+User.prototype.subscribe = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:EPCIS{epcisname: {otherEPCISname}})',
+        'MERGE (user) -[rel:subscribe]-> (other)',
     ].join('\n');
 
     var params = {
@@ -275,7 +332,9 @@ User.prototype.own = function (other, callback) {
     });
 };
 
-/** Jaehee modified
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
  * 
  */ 
@@ -348,7 +407,9 @@ User.get = function (username, callback) {
 };
 
 
-/** Jaehee modified
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
  * 2016.11.03
  * 
  */ 
@@ -384,6 +445,88 @@ User.getPossess = function (username, callback) {
         }
 
         callback(null, epciss);
+    });
+};
+
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
+ * 2016.11.04
+ * TODO
+ */ 
+User.getSubscribe = function (username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})-[:subscribe]->(epcis:EPCIS)',
+        'RETURN epcis', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcissubss = [];
+
+        for (var i = 0; i < results.length; i++) {
+
+        	var epcis = new EPCIS(results[i]['epcis']);
+        	if(!epcis.epcisname) {
+        		return callback("EPCIS exists, but its epcisname does not exist");
+        	}
+        	epcissubss.push(epcis.epcisname);
+        }
+
+        callback(null, epcissubss);
+    });
+};
+
+/** 
+ * Jaehee created
+ * lovesm135@kaist.ac.kr
+ * 2016.11.05
+ * TODO
+ */ 
+User.getFurnish = function (username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})-[:furnish]->(epcis:EPCIS)',
+        'RETURN epcis', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurns = [];
+
+        for (var i = 0; i < results.length; i++) {
+
+        	var epcis = new EPCIS(results[i]['epcis']);
+        	if(!epcis.epcisname) {
+        		return callback("EPCIS exists, but its epcisname does not exist");
+        	}
+        	epcisfurns.push(epcis.epcisname);
+        }
+
+        callback(null, epcisfurns);
     });
 };
 
