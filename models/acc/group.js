@@ -3,7 +3,6 @@
 
 var neo4j = require('neo4j');
 var errors = require('./errors');
-var Thing = require('./thing');
 var User = require('./user');
 var config = require('../../conf.json');
 var neo4j_url = "http://"+config.NEO_ID+":"+config.NEO_PW+"@"+config.NEO_ADDRESS;

@@ -1,15 +1,19 @@
 // user.js
 // User model logic.
 /**
- * Jaehee modified
+ * @modifier Jaehee Ha 
  * lovesm135@kaist.ac.kr
- * 2016.11.03
+ * modified
+ * 2016.10.31
+ * added subscription functionality
+ * 2016.11.04
+ * added furnishing functionality
+ * 2016.11.05
  */
 
 var neo4j = require('neo4j');
 var errors = require('./errors');
 var EPCIS = require('./epcis');
-var Thing = require('./thing');
 var Group = require('./group');
 var config = require('../../conf.json');
 var neo4j_url = "http://"+config.NEO_ID+":"+config.NEO_PW+"@"+config.NEO_ADDRESS;
@@ -160,8 +164,9 @@ User.prototype.patch = function (props, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.03
  * 
  */ 
@@ -173,11 +178,11 @@ User.prototype.del = function (callback) {
     
 	var query = [
 	   'MATCH (user:User {username: {thisUsername}})',
-	   'MATCH (user)-[:own]->(thing)',
-	   'MATCH (thing)-[:have]->(service)',
 	   'MATCH (user)-[:manage]->(group)',
 	   'MATCH (user)-[:possess]->(epcis)',
-	   'DETACH DELETE user, thing, service, group, epcis'
+	   'MATCH (user)-[:subscribe]->(epcis)',
+	   'MATCH (user)-[:furnish]->(epcis)',
+	   'DETACH DELETE user, group, epcis'
 	   
 	].join('\n');
 
@@ -235,8 +240,9 @@ User.prototype.unmanage = function (other, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.03
  * 
  */ 
@@ -261,8 +267,9 @@ User.prototype.possess = function (other, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.05
  * 
  */ 
@@ -287,8 +294,9 @@ User.prototype.furnish = function (other, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.04
  * 
  */ 
@@ -312,29 +320,10 @@ User.prototype.subscribe = function (other, callback) {
     });
 };
 
-User.prototype.own = function (other, callback) {
-    var query = [
-        'MATCH (user:User {username: {thisUsername}})',
-        'MATCH (other:Thing{thingname: {otherThingname}})',
-        'MERGE (user) -[rel:own]-> (other)',
-    ].join('\n');
-
-    var params = {
-        thisUsername: this.username,
-        otherThingname: other.thingname,
-    };
-
-    db.cypher({
-        query: query,
-        params: params,
-    }, function (err) {
-        callback(err);
-    });
-};
-
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.03
  * 
  */ 
@@ -359,26 +348,6 @@ User.prototype.unpossess = function (other, callback) {
     });
 };
 
-User.prototype.unown = function (other, callback) {
-    var query = [
-        'MATCH (user:User {username: {thisUsername}})',
-        'MATCH (other:Thing {thingname: {otherThingname}})',
-        'MATCH (user) -[rel:own]-> (other)',
-        'DELETE rel',
-    ].join('\n');
-
-    var params = {
-    	thisUsername: this.username,
-        otherThingname: other.thingname,
-    };
-
-    db.cypher({
-        query: query,
-        params: params,
-    }, function (err) {
-        callback(err);
-    });
-};
 
 User.get = function (username, callback) {
     var query = [
@@ -408,8 +377,9 @@ User.get = function (username, callback) {
 
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.03
  * 
  */ 
@@ -449,10 +419,11 @@ User.getPossess = function (username, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.04
- * TODO
+ * 
  */ 
 User.getSubscribe = function (username, callback) {
 
@@ -490,10 +461,11 @@ User.getSubscribe = function (username, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.05
- * TODO
+ * 
  */ 
 User.getFurnish = function (username, callback) {
 
@@ -530,47 +502,6 @@ User.getFurnish = function (username, callback) {
     });
 };
 
-User.getOwn = function (username, callback) {
-
-    // Query all users and whether we follow each one or not:
-    var query = [
-        'MATCH (user:User {username: {thisUsername}})-[:own]->(thing:Thing)',
-        'RETURN thing', // COUNT(rel) is a hack for 1 or 0
-    ].join('\n');
-
-    var params = {
-        thisUsername: username,
-    };
-
-    db.cypher({
-        query: query,
-        params: params,
-    }, function (err, results) {
-        if (err) {
-        	return callback(err);
-        }
-
-        var things = [];
-
-        for (var i = 0; i < results.length; i++) {
-            //, function(err,thing){
-            //	if(thing)
-        	var thing = new Thing(results[i]['thing']);
-        	if(!thing.thingname) {
-        		return callback("Thing exists, but its thingname does not exist");
-        	}
-        	things.push(thing.thingname);
-        	//var things = new thing.Thing(results[i]['thing']);
-            //ownerships.push(things.gs1code);
-        	//var users = new User(results[i]['thing']);
-        	//ownerships.push(users.username);
-        }
-        //if (owns.length == 0)
-        //	callback(null,null);
-        callback(null, things);
-    });
-};
-
 User.getManage = function (username, callback) {
 
     // Query all users and whether we follow each one or not:
@@ -595,20 +526,13 @@ User.getManage = function (username, callback) {
         var groups = [];
 
         for (var i = 0; i < results.length; i++) {
-            //, function(err,thing){
-            //	if(thing)
+
         	var group = new Group(results[i]['group']);
         	if(!group.groupname){
         		return callback("Group exists, but its groupname does not exist");
         	}
         	groups.push(group.groupname);
-        	//var things = new thing.Thing(results[i]['thing']);
-            //ownerships.push(things.gs1code);
-        	//var users = new User(results[i]['thing']);
-        	//ownerships.push(users.username);
         }
-        //if (manages.length == 0)
-        //	callback(null,null);
         callback(null, groups);
     });
 };
@@ -638,20 +562,12 @@ User.getJoin = function (username, callback) {
         var groups = [];
 
         for (var i = 0; i < results.length; i++) {
-            //, function(err,thing){
-            //	if(thing)
         	var group = new Group(results[i]['group']);
         	if(!group.groupname){
         		return callback("Group exists, but its groupname does not exist");
         	}
         	groups.push(group.groupname);
-        	//var things = new thing.Thing(results[i]['thing']);
-            //ownerships.push(things.gs1code);
-        	//var users = new User(results[i]['thing']);
-        	//ownerships.push(users.username);
         }
-        //if (manages.length == 0)
-        //	callback(null,null);
         callback(null, groups);
     });
 };

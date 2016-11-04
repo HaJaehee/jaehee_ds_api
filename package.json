@@ -13,7 +13,6 @@
     "neo4j":"2.0.0-RC2",
     "oauth2-server":"2.4.1",
     "ioredis": "1.9.0",
-    "mongodb": "~2.0",
     "native-dns": "0.7.0",
     "java": "0.6.0",
     "socket.io": "1.4.4",

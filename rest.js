@@ -94,10 +94,11 @@ exports.getOperation = function (uri, operation, args, callback) {
 };
 
 /** 
- * Jaehee created
+ * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.04
- * TODO
+ * 
  */
 exports.delOperation = function (uri, operation, args, callback) {
 	if (operation === null) {

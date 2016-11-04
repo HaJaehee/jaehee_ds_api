@@ -1,11 +1,14 @@
 // epcis.js
 // EPCIS model logic.
 /**
- * Jaehee modified from duplicated thing.js
+ * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr
+ * created and modified from duplicated thing.js
  * 2016.11.03
  * added subscription functionality
  * 2016.11.04
+ * added furnishing functionality
+ * 2016.11.05
  */
 var neo4j = require('neo4j');
 var errors = require('./errors');
@@ -270,33 +273,6 @@ EPCIS.F = function (epcisname, callback) {
     });
 };
 
-
-/*EPCIS.getEPCISname = function (_node) {
-	
-	var epcis = new EPCIS(_node);
-	if(!epcis.epcisname){
-		return null;
-	}
-	return epcis.epcisname;
-};
-
-
-EPCIS.getAll = function (callback) {
-    var query = [
-        'MATCH (epcis:EPCIS)',
-        'RETURN epcis',
-    ].join('\n');
-
-    db.cypher({
-        query: query,
-    }, function (err, results) {
-        if (err) return callback(err);
-        var things = results.map(function (result) {
-            return new EPCIS(result['epcis']);
-        });
-        callback(null, things);
-    });
-};*/
 
 // Creates the EPCIS and persists (saves) it to the db, incl. indexing it:
 EPCIS.create = function (props, callback) {
