@@ -499,6 +499,38 @@ EPCIS.getFurnisher = function (epcisname, callback) {
     });
 };
 
+EPCIS.getFurnisherOthers = function (epcisname, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user)',
+        'WHERE NOT (user:User)-[:furnish]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'RETURN user', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurnisherothers = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcisfurnisherother = results[i].user.properties;
+        	epcisfurnisherothers.push(epcisfurnisherother.username);
+        }
+
+        callback(null, epcisfurnisherothers);
+    });
+};
+
 EPCIS.getSubscriber = function (epcisname, callback) {
 
     // Query all users and whether we follow each one or not:
@@ -527,6 +559,38 @@ EPCIS.getSubscriber = function (epcisname, callback) {
         }
 
         callback(null, epcissubscribers);
+    });
+};
+
+EPCIS.getSubscriberOthers = function (epcisname, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+         'MATCH (user)',
+         'WHERE NOT (user:User)-[:subscribe]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+         'RETURN user', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcissubscriberothers = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcissubscriberother = results[i].user.properties;
+        	epcissubscriberothers.push(epcissubscriberother.username);
+        }
+
+        callback(null, epcissubscriberothers);
     });
 };
 

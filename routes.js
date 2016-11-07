@@ -141,6 +141,22 @@ exports.configure = function (app) {
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
+	 * 2016.11.07
+	 * 
+	 */ 
+	app.get('/user/:username/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
+		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({furnisher: results.result});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
 	 * 2016.11.05
 	 * 
 	 */ 
@@ -203,12 +219,29 @@ exports.configure = function (app) {
 	 * 
 	 */ 
 	app.get('/epcis/:epcisname/furnisher', app.oauth.authorise(), function (req, res){
-		// 
+		
 		EPCIS.getFurnisher(req.params.epcisname, function (err, epcisfurnishers){
 			if(err) {
 				return res.send({error:err});
 			}
 			res.send({epcisfurnishers:epcisfurnishers});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.07
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/furnisher/others', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getFurnisherOthers(req.params.epcisname, function (err, epcisfurnisherothers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurnisherothers:epcisfurnisherothers});
 		});
 	});
 	
@@ -285,6 +318,23 @@ exports.configure = function (app) {
 	});
 	
 
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.07
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/subscriber/others', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getSubscriberOthers(req.params.epcisname, function (err, epcissubscriberothers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubscriberothers:epcissubscriberothers});
+		});
+	});
+	
 	/** 
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
@@ -377,32 +427,29 @@ exports.configure = function (app) {
 	 *
 	 */
 	app.post('/user/:username/epcis/:epcisname/capture', app.oauth.authorise(), function (req, res){
-		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err1, results1){
-			if(err1) {
-				return res.send({error:err1});
-			}		
-			EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err2, results2){
-				if(err2) {
-					return res.send({error:err2});
-				}
-				
-				if (results1.result === 'yes' || results2.result === 'yes')
-				{
-					var epcisevent = req.body.epcisevent;
-					rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
-						if (error) {
-							return res.send({error: error});
-						} else {
-							res.send({result: "success"});
-						}
-					});
-				}
-				else 
-				{
-					res.send({error:err});
-				}
-			});
+
+		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}
+			
+			if ( results.result === 'yes')
+			{
+				var epcisevent = req.body.epcisevent;
+				rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
+					if (error) {
+						return res.send({error: error});
+					} else {
+						res.send({result: "success"});
+					}
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
 		});
+		
 	});
 	
 	/** 
@@ -413,32 +460,30 @@ exports.configure = function (app) {
 	 * TODO will be implemented
 	 */
 	app.post('/user/:username/epcis/:epcisname/query', app.oauth.authorise(), function (req, res){
-		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err1, results1){
-			if(err1) {
-				return res.send({error:err1});
-			}		
-			EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err2, results2){
-				if(err2) {
-					return res.send({error:err2});
-				}
-				
-				if (results1.result === 'yes' || results2.result === 'yes')
-				{
-					var epcisevent = req.body.epcisevent;
-					rest.postOperation(EPCIS_Query_Address, "" , epcisevent, function (error, response) {
-						if (error) {
-							return res.send({error: error});
-						} else {
-							res.send({result: "success"});
-						}
-					});
-				}
-				else 
-				{
-					res.send({error:err});
-				}
-			});
+
+		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}
+			
+			if (results.result === 'yes')
+			{
+				var epcisquery = req.body.epcisquery;
+				console.log(epcisquery);
+				rest.getOperation(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
+					if (error) {
+						return res.send({error: error});
+					} else {
+						res.send({result: "success"});
+					}
+				});
+			}
+			else 
+			{
+				res.send({error:err});
+			}
 		});
+		
 	});
 	
 	
