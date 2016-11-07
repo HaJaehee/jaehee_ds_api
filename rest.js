@@ -56,6 +56,42 @@ exports.postOperation = function (uri, operation, args, callback) {
 	});	
 };
 
+/** 
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2016.11.04
+ * 
+ */
+exports.getOperationResNoJSON = function (uri, operation, args, callback) {
+	if (operation === null) {
+		return callback("invalid input to executeOperation");
+	}
+
+	var operationReq = exports.getOperationRequest(uri, operation);
+	if(args){
+		operationReq.body = args;
+	}
+	//console.log(operationReq);
+	
+	request.get(operationReq, function (error, res, body){
+		if (error) {
+			return callback(error);
+		}
+		if (res.statusCode === 200) {
+			var operationResponse = Object();
+			operationResponse.body = body.replace(/\n/g, "<n>").replace(/\r/g, "<r>").replace(/\t/g, "<t>").replace(/\"/g,"<q>");
+			return callback(null, operationResponse);
+			
+		} else if (res.statusCode >= 401 && res.statusCode <= 403) {
+			return callback(null, null);
+		} else {
+			return callback("authentication failed, status code from rest api was " + res.statusCode);
+		}
+	});
+	
+	
+};
 
 exports.getOperation = function (uri, operation, args, callback) {
 	if (operation === null) {
@@ -75,6 +111,7 @@ exports.getOperation = function (uri, operation, args, callback) {
 		if (res.statusCode === 200) {
 			try {
 				//console.log(body);
+				console.log(JSON.stringify(body));
 				var operationResponse = JSON.parse(body);
 				if(operationResponse.error){
 					return callback(operationResponse.error);

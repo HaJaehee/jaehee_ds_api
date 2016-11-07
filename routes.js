@@ -459,7 +459,7 @@ exports.configure = function (app) {
 	 * 2016.11.05
 	 * TODO will be implemented
 	 */
-	app.post('/user/:username/epcis/:epcisname/query', app.oauth.authorise(), function (req, res){
+	app.get('/user/:username/epcis/:epcisname', app.oauth.authorise(), function (req, res){
 
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
@@ -468,12 +468,14 @@ exports.configure = function (app) {
 			
 			if (results.result === 'yes')
 			{
-				var epcisquery = req.body.epcisquery;
-				rest.getOperation(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
+				if (req.query !== null && req.query.__proto__ !== null)	{
+					delete req.query.__proto__;
+				}
+				var epcisquery = jsonToQueryString(req.query);
+				rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
 					if (error) {
 						return res.send({error: error});
 					} else {
-						console.log(response.body);
 						res.send(response.body);
 					}
 				});
@@ -486,6 +488,20 @@ exports.configure = function (app) {
 		
 	});
 	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.07
+	 * 
+	 */
+	var jsonToQueryString = function (json) {
+	    return '?' + 
+	        Object.keys(json).map(function(key) {
+	            return encodeURIComponent(key) + '=' +
+	                encodeURIComponent(json[key]);
+	        }).join('&');
+	}
 	
 	app.get('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		User.getManage(req.params.username, function (err, groups){
