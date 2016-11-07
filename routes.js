@@ -469,12 +469,12 @@ exports.configure = function (app) {
 			if (results.result === 'yes')
 			{
 				var epcisquery = req.body.epcisquery;
-				console.log(epcisquery);
 				rest.getOperation(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
 					if (error) {
 						return res.send({error: error});
 					} else {
-						res.send({result: "success"});
+						console.log(response.body);
+						res.send(response.body);
 					}
 				});
 			}

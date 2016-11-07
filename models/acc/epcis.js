@@ -503,8 +503,8 @@ EPCIS.getFurnisherOthers = function (epcisname, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-        'MATCH (user)',
-        'WHERE NOT (user:User)-[:furnish]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'MATCH (user:User)',
+        'WHERE not((user)-[:furnish]->(:EPCIS {epcisname: {thisEPCISname}}))',
         'RETURN user', // COUNT(rel) is a hack for 1 or 0
     ].join('\n');
 
@@ -566,8 +566,8 @@ EPCIS.getSubscriberOthers = function (epcisname, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-         'MATCH (user)',
-         'WHERE NOT (user:User)-[:subscribe]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+         'MATCH (user:User)',
+         'WHERE not((user)-[:subscribe]->(:EPCIS {epcisname: {thisEPCISname}}))',
          'RETURN user', // COUNT(rel) is a hack for 1 or 0
     ].join('\n');
 
