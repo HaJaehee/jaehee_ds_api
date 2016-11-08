@@ -111,11 +111,11 @@ function isConstraintViolation(err) {
 Group.prototype.patch = function(props, callback) {
 	var safeProps = validate(props);
 
-	var query = [ 'MATCH (group:Group {groupname: {thisGroupname}})',
+	var query = [ 'MATCH (group:Group {groupname: {groupname}})',
 			'SET group += {props}', 'RETURN group', ].join('\n');
 
 	var params = {
-		thisGroupname : this.groupname,
+		groupname : this.groupname,
 		props : safeProps,
 	};
 
@@ -299,11 +299,11 @@ Group.prototype.getMemberAndOthers = function(callback) {
 // Static methods:
 
 Group.get = function(groupname, callback) {
-	var query = [ 'MATCH (group:Group {groupname: {thisGroupname}})',
+	var query = [ 'MATCH (group:Group {groupname: {groupname}})',
 			'RETURN group', ].join('\n');
 
 	var params = {
-		thisGroupname : groupname,
+		groupname : groupname,
 	};
 
 	db.cypher({
@@ -333,7 +333,7 @@ Group.isManager = function(username, groupname, callback) {
 
 	var params = {
 		thisGroupname : groupname,
-		thisUsername : username,
+		thisUsername : username
 	};
 
 	db.cypher({
@@ -366,7 +366,7 @@ Group.isMember = function(username, groupname, callback) {
 
 	var params = {
 		thisGroupname : groupname,
-		thisUsername : username,
+		thisUsername : username
 	};
 
 	db.cypher({
@@ -416,8 +416,7 @@ Group.getFurnish = function (groupname, callback) {
 
             for (var i = 0; i < results.length; i++) {
 
-            	
-            	var epcis = results[i]['epcis'].properties;
+            	var epcis = new EPCIS(results[i]['epcis']);
             	if(!epcis.epcisname) {
             		return callback("EPCIS exists, but its epcisname does not exist");
             	}
@@ -429,10 +428,7 @@ Group.getFurnish = function (groupname, callback) {
 };
 
 /**
- * @creator Jaehee Ha 
- * lovesm135@kaist.ac.kr 
- * created 
- * 2016.11.05
+ * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.05
  * 
  */
 Group.getSubscribe = function (groupname, callback) {
@@ -459,7 +455,7 @@ Group.getSubscribe = function (groupname, callback) {
 
         for (var i = 0; i < results.length; i++) {
 
-        	var epcis = results[i]['epcis'].properties;
+        	var epcis = new EPCIS(results[i]['epcis']);
         	if(!epcis.epcisname) {
         		return callback("EPCIS exists, but its epcisname does not exist");
         	}
@@ -475,7 +471,7 @@ Group.create = function(props, callback) {
 	var query = [ 'CREATE (group:Group {props})', 'RETURN group', ].join('\n');
 
 	var params = {
-		props : validate(props),
+		props : validate(props)
 	};
 
 	db.cypher({

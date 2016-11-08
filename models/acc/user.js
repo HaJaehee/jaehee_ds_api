@@ -122,13 +122,13 @@ User.prototype.patch = function (props, callback) {
     var safeProps = validate(props);
 
     var query = [
-        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (user:User {username: {username}})',
         'SET user += {props}',
         'RETURN user',
     ].join('\n');
 
     var params = {
-        thisUsername: this.username,
+        username: this.username,
         props: safeProps,
     };
 
@@ -351,12 +351,12 @@ User.prototype.unpossess = function (other, callback) {
 
 User.get = function (username, callback) {
     var query = [
-        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (user:User {username: {username}})',
         'RETURN user',
     ].join('\n');
 
     var params = {
-        thisUsername: username,
+        username: username,
     };
 
     db.cypher({
@@ -422,48 +422,6 @@ User.getPossess = function (username, callback) {
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
- * 2016.11.05
- * 
- */ 
-User.getFurnish = function (username, callback) {
-
-    // Query all users and whether we follow each one or not:
-    var query = [
-        'MATCH (user:User {username: {thisUsername}})-[:furnish]->(epcis:EPCIS)',
-        'RETURN epcis', // COUNT(rel) is a hack for 1 or 0
-    ].join('\n');
-
-    var params = {
-        thisUsername: username,
-    };
-
-    db.cypher({
-        query: query,
-        params: params,
-    }, function (err, results) {
-        if (err) {
-        	return callback(err);
-        }
-
-        var epcisfurns = [];
-
-        for (var i = 0; i < results.length; i++) {
-
-        	var epcis = new EPCIS(results[i]['epcis']);
-        	if(!epcis.epcisname) {
-        		return callback("EPCIS exists, but its epcisname does not exist");
-        	}
-        	epcisfurns.push(epcis.epcisname);
-        }
-
-        callback(null, epcisfurns);
-    });
-};
-
-/** 
- * @creator Jaehee Ha
- * lovesm135@kaist.ac.kr
- * created
  * 2016.11.04
  * 
  */ 
@@ -499,6 +457,48 @@ User.getSubscribe = function (username, callback) {
         }
 
         callback(null, epcissubss);
+    });
+};
+
+/** 
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2016.11.05
+ * 
+ */ 
+User.getFurnish = function (username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})-[:furnish]->(epcis:EPCIS)',
+        'RETURN epcis', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurns = [];
+
+        for (var i = 0; i < results.length; i++) {
+
+        	var epcis = new EPCIS(results[i]['epcis']);
+        	if(!epcis.epcisname) {
+        		return callback("EPCIS exists, but its epcisname does not exist");
+        	}
+        	epcisfurns.push(epcis.epcisname);
+        }
+
+        callback(null, epcisfurns);
     });
 };
 
@@ -586,7 +586,7 @@ User.create = function (props, callback) {
     ].join('\n');
 
     var params = {
-        props: validate(props),
+        props: validate(props)
     };
 
     db.cypher({
