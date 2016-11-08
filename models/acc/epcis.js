@@ -122,13 +122,13 @@ EPCIS.prototype.patch = function (props, callback) {
     var safeProps = validate(props);
 
     var query = [
-        'MATCH (EPCIS:EPCIS {epcisname: {epicisname}})',
+        'MATCH (EPCIS:EPCIS {epcisname: {thisEPCISname}})',
         'SET epcis += {props}',
         'RETURN epcis',
     ].join('\n');
 
     var params = {
-        epcisname: this.epcisname,
+        thisEPCISname: this.epcisname,
         props: safeProps,
     };
 
@@ -169,16 +169,14 @@ EPCIS.del = function (username, epcisname, callback) {
     // (Note that this'll still fail if there are any relationships attached
     // of any other types, which is good because we don't expect any.)
     var query = [
-          'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
-          'MATCH (epcis)<-[:possess]-(user:User {username: {username}})',
-          'OPTIONAL MATCH (epcis)<-[:subscribe]-(user:User)',
-          'OPTIONAL MATCH (epcis)<-[:furnish]-(user:User)',
+          'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+          'MATCH (epcis)<-[:possess]-(user:User {username: {thisUsername}})',
           'DETACH DELETE epcis',
     ].join('\n');
 
     var params = {
-        epcisname: epcisname,
-        username: username,
+        thisEPCISname: epcisname,
+        thisUsername: username,
     };
 
     db.cypher({
@@ -198,14 +196,41 @@ EPCIS.unfurnish = function (username, epcisname, callback) {
     // (Note that this'll still fail if there are any relationships attached
     // of any other types, which is good because we don't expect any.)
     var query = [
-          'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
-          'MATCH (epcis)<-[rel:furnish]-(user:User {username: {username}})',
+          'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+          'MATCH (epcis)<-[rel:furnish]-(user:User {username: {thisUsername}})',
           'DELETE rel',
     ].join('\n');
 
     var params = {
-        epcisname: epcisname,
-        username: username,
+        thisEPCISname: epcisname,
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        return callback(null, {result: "success"});
+    });
+};
+
+EPCIS.unfurnishGroup = function (groupname, epcisname, callback) {
+    // Use a Cypher query to delete both this EPCIS and his/her following
+    // relationships in one query and one network request:
+    // (Note that this'll still fail if there are any relationships attached
+    // of any other types, which is good because we don't expect any.)
+    var query = [
+          'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+          'MATCH (epcis)<-[rel:furnish]-(group:Group {groupname: {thisGroupname}})',
+          'DELETE rel',
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        thisGroupname: groupname,
     };
 
     db.cypher({
@@ -225,14 +250,41 @@ EPCIS.unsubscribe = function (username, epcisname, callback) {
     // (Note that this'll still fail if there are any relationships attached
     // of any other types, which is good because we don't expect any.)
     var query = [
-          'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
-          'MATCH (epcis)<-[rel:subscribe]-(user:User {username: {username}})',
+          'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+          'MATCH (epcis)<-[rel:subscribe]-(user:User {username: {thisUsername}})',
           'DELETE rel',
     ].join('\n');
 
     var params = {
-        epcisname: epcisname,
-        username: username,
+        thisEPCISname: epcisname,
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+        return callback(null, {result: "success"});
+    });
+};
+
+EPCIS.unsubscribeGroup = function (groupname, epcisname, callback) {
+    // Use a Cypher query to delete both this EPCIS and his/her following
+    // relationships in one query and one network request:
+    // (Note that this'll still fail if there are any relationships attached
+    // of any other types, which is good because we don't expect any.)
+    var query = [
+          'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+          'MATCH (epcis)<-[rel:subscribe]-(group:Group {groupname: {thisGroupname}})',
+          'DELETE rel',
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        thisGroupname: groupname,
     };
 
     db.cypher({
@@ -250,12 +302,12 @@ EPCIS.unsubscribe = function (username, epcisname, callback) {
 
 EPCIS.F = function (epcisname, callback) {
     var query = [
-        'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
+        'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
         'RETURN epcis',
     ].join('\n');
 
     var params = {
-        epcisname: epcisname,
+        thisEPCISname: epcisname,
     };
 
     db.cypher({
@@ -283,7 +335,7 @@ EPCIS.create = function (props, callback) {
     ].join('\n');
 
     var params = {
-        props: validate(props)
+        props: validate(props),
     };
 
     db.cypher({
@@ -317,7 +369,7 @@ EPCIS.isPossessor = function(username, epcisname, callback){
     
     var params = {
         thisEPCISname: epcisname,
-        thisUsername: username
+        thisUsername: username,
     };
 
     db.cypher({
@@ -330,7 +382,7 @@ EPCIS.isPossessor = function(username, epcisname, callback){
        if(results.length>0){
     	   return callback(null, {result: "yes"});
        }
-       return callback(null, {result: "no"});
+       callback(null, {result: "no"});
        
     });	
 };
@@ -338,14 +390,17 @@ EPCIS.isPossessor = function(username, epcisname, callback){
 EPCIS.isFurnisher = function(username, epcisname, callback){
     var query = [
         'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
-        'MATCH (epcis)<-[:furnish]-(user:User {username: {thisUsername}})',
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (group:Group)',
+        'WHERE (epcis)<-[:furnish]-(user)',
+        'OR (epcis)<-[:furnish]-(group)<-[:join]-(user)',
         'RETURN user',
     ].join('\n');
 
     
     var params = {
         thisEPCISname: epcisname,
-        thisUsername: username
+        thisUsername: username,
     };
 
     db.cypher({
@@ -359,21 +414,23 @@ EPCIS.isFurnisher = function(username, epcisname, callback){
     	   return callback(null, {result: "yes"});
        }
        return callback(null, {result: "no"});
-       
     });	
 };
 
 EPCIS.isSubscriber = function(username, epcisname, callback){
     var query = [
-        'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
-        'MATCH (epcis)<-[:subscribe]-(user:User {username: {thisUsername}})',
-        'RETURN user',
+         'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
+         'MATCH (user:User {username: {thisUsername}})',
+         'MATCH (group:Group)',
+         'WHERE (epcis)<-[:subscribe]-(user)',
+         'OR (epcis)<-[:subscribe]-(group)<-[:join]-(user)',
+         'RETURN user',
     ].join('\n');
 
     
     var params = {
         thisEPCISname: epcisname,
-        thisUsername: username
+        thisUsername: username,
     };
 
     db.cypher({
@@ -387,7 +444,6 @@ EPCIS.isSubscriber = function(username, epcisname, callback){
     	   return callback(null, {result: "yes"});
        }
        return callback(null, {result: "no"});
-       
     });	
 };
 
@@ -445,12 +501,12 @@ EPCIS.isAuthority = function(username, epcisname, callback){
 
 EPCIS.get = function (epcisname, callback) {
     var query = [
-        'MATCH (epcis:EPCIS {epcisname: {epcisname}})',
+        'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
         'RETURN epcis',
     ].join('\n');
 
     var params = {
-        epcisname: epcisname,
+        thisEPCISname: epcisname,
     };
 
     db.cypher({
@@ -536,14 +592,14 @@ EPCIS.getFurnisherGroup = function (epcisname, username, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',
+        'MATCH (user:User {username: {thisUsername}})-[:manage]->(group:Group)',
         'MATCH (group)-[:furnish]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
         'RETURN group', // COUNT(rel) is a hack for 1 or 0
     ].join('\n');
 
     var params = {
         thisEPCISname: epcisname,
-        Username: username,
+        thisUsername: username,
     };
 
     db.cypher({
@@ -569,7 +625,7 @@ EPCIS.getFurnisherOthersGroup = function (epcisname, username, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',        
+        'MATCH (user:User {username: {thisUsername}})-[:manage]->(group:Group)',        
         'MATCH (group)',
         'WHERE not((group)-[:furnish]->(:EPCIS {epcisname: {thisEPCISname}}))',
         'RETURN group', // COUNT(rel) is a hack for 1 or 0
@@ -577,7 +633,7 @@ EPCIS.getFurnisherOthersGroup = function (epcisname, username, callback) {
 
     var params = {
         thisEPCISname: epcisname,
-        Username: username,
+        thisUsername: username,
     };
 
     db.cypher({
@@ -666,14 +722,14 @@ EPCIS.getSubscriberGroup = function (epcisname, username, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',
+        'MATCH (user:User {username: {thisUsername}})-[:manage]->(group:Group)',
         'MATCH (group)-[:subscribe]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
         'RETURN group', // COUNT(rel) is a hack for 1 or 0
     ].join('\n');
 
     var params = {
         thisEPCISname: epcisname,
-        Username: username,
+        thisUsername: username,
     };
 
     db.cypher({
@@ -699,7 +755,7 @@ EPCIS.getSubscriberOthersGroup = function (epcisname, username, callback) {
 
     // Query all users and whether we follow each one or not:
     var query = [
-        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)', 
+        'MATCH (user:User {username: {thisUsername}})-[:manage]->(group:Group)', 
         'MATCH (group:Group)',
         'WHERE not((group)-[:subscribe]->(:EPCIS {epcisname: {thisEPCISname}}))',
         'RETURN group', // COUNT(rel) is a hack for 1 or 0
@@ -707,7 +763,7 @@ EPCIS.getSubscriberOthersGroup = function (epcisname, username, callback) {
 
     var params = {
         thisEPCISname: epcisname,
-        Username: username,
+        thisUsername: username,
     };
 
     db.cypher({
