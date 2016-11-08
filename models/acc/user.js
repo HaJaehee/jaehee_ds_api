@@ -537,7 +537,13 @@ User.getManage = function (username, callback) {
     });
 };
 
-
+/** 
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * modified
+ * 2016.11.05
+ * 
+ */ 
 User.getJoin = function (username, callback) {
 
     // Query all users and whether we follow each one or not:
@@ -559,16 +565,16 @@ User.getJoin = function (username, callback) {
         	return callback(err);
         }
 
-        var groups = [];
+        var joinedgroups = [];
 
         for (var i = 0; i < results.length; i++) {
-        	var group = new Group(results[i]['group']);
-        	if(!group.groupname){
+        	var joinedgroup = new Group(results[i]['group']);
+        	if(!joinedgroup.groupname){
         		return callback("Group exists, but its groupname does not exist");
         	}
-        	groups.push(group.groupname);
+        	joinedgroups.push(joinedgroup.groupname);
         }
-        callback(null, groups);
+        callback(null, joinedgroups);
     });
 };
 

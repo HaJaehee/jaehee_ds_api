@@ -215,6 +215,32 @@ exports.configure = function (app) {
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/furnish/group', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			Group.get(req.body.epcisfurnishergroupname, function(err2, group){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				group.furnish(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
 	 * 2016.11.04
 	 * 
 	 */ 
@@ -249,30 +275,52 @@ exports.configure = function (app) {
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
+	 * 2016.11.08
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/furnishergroup', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getFurnisherGroup(req.params.epcisname, req.params.username, function (err, epcisfurnishergroups){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurnishergroups:epcisfurnishergroups});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/furnishergroup/others', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getFurnisherOthersGroup(req.params.epcisname, req.params.username, function (err, epcisfurnisherothersgroup){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurnisherothersgroup:epcisfurnisherothersgroup});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
 	 * 2016.11.04
 	 * 
 	 */
 	app.del('/unfurnepcis/:epcisname/user/:epcisfurnishername', app.oauth.authorise(), function (req, res){
 		
-		EPCIS.isFurnisher(req.params.epcisfurnishername, req.params.epcisname, function(err, results){
-			if(err) {
-				return res.send({error:err});
-			}		
-			
-			if (results.result === 'yes')
-			{
-				EPCIS.unfurnish(req.params.epcisfurnishername, req.params.epcisname, function (err){
-					if (err) {
-						return res.send({error: err});
-					}
-					res.send({result: "success"});
-				});
+		EPCIS.unfurnish(req.params.epcisfurnishername, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
 			}
-			else 
-			{
-				res.send({error:err});
-			}
+			res.send({result: "success"});
 		});
+
 	});
 	
 	/** 
@@ -317,6 +365,48 @@ exports.configure = function (app) {
 		});
 	});
 	
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/subscribe/group', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			Group.get(req.body.epcissubscribergroupname, function(err2, group){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				group.subscribe(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/subscriber', app.oauth.authorise(), function (req, res){
+		EPCIS.getSubscriber(req.params.epcisname, function (err, epcissubscribers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubscribers:epcissubscribers});
+		});
+	});
 
 	/** 
 	 * @creator Jaehee Ha
@@ -339,17 +429,36 @@ exports.configure = function (app) {
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
-	 * 2016.11.04
+	 * 2016.11.08
 	 * 
 	 */ 
-	app.get('/epcis/:epcisname/subscriber', app.oauth.authorise(), function (req, res){
-		EPCIS.getSubscriber(req.params.epcisname, function (err, epcissubscribers){
+	app.get('/epcis/:epcisname/user/:username/subscribergroup', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getSubscriberGroup(req.params.epcisname, req.params.username, function (err, epcissubscribergroups){
 			if(err) {
 				return res.send({error:err});
 			}
-			res.send({epcissubscribers:epcissubscribers});
+			res.send({epcissubscribergroups:epcissubscribergroups});
 		});
 	});
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/subscribergroup/others', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.getSubscriberOthersGroup(req.params.epcisname, req.params.username, function (err, epcissubscriberothersgroup){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubscriberothersgroup:epcissubscriberothersgroup});
+		});
+	});
+	
+
 	
 
 	
@@ -361,26 +470,14 @@ exports.configure = function (app) {
 	 * 
 	 */
 	app.del('/unsubsepcis/:epcisname/user/:epcissubscribername', app.oauth.authorise(), function (req, res){
-		
-		EPCIS.isSubscriber(req.params.epcissubscribername, req.params.epcisname, function(err, results){
-			if(err) {
-				return res.send({error:err});
-			}		
-			
-			if (results.result === 'yes')
-			{
-				EPCIS.unsubscribe(req.params.epcissubscribername, req.params.epcisname, function (err){
-					if (err) {
-						return res.send({error: err});
-					}
-					res.send({result: "success"});
-				});
+
+		EPCIS.unsubscribe(req.params.epcissubscribername, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
 			}
-			else 
-			{
-				res.send({error:err});
-			}
+			res.send({result: "success"});
 		});
+
 	});
 	
 	/** 
@@ -496,12 +593,60 @@ exports.configure = function (app) {
 	 * 
 	 */
 	var jsonToQueryString = function (json) {
-	    return '?' + 
+	    return '' + 
 	        Object.keys(json).map(function(key) {
 	            return encodeURIComponent(key) + '=' +
 	                encodeURIComponent(json[key]);
 	        }).join('&');
 	}
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.get('/joinedgroup/:joinedgroupname/furnish', app.oauth.authorise(), function (req, res){
+		Group.getFurnish(req.params.joinedgroupname, function (err, epcisfurns){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcisfurns:epcisfurns});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.get('/joinedgroup/:joinedgroupname/subscribe', app.oauth.authorise(), function (req, res){
+		Group.getSubscribe(req.params.joinedgroupname, function (err, epcissubs){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({epcissubs:epcissubs});
+		});
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.get('/user/:username/join', app.oauth.authorise(), function (req, res){
+		User.getJoin(req.params.username, function (err, joinedgroups){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({joinedgroups:joinedgroups});
+		});
+	});
 	
 	app.get('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		User.getManage(req.params.username, function (err, groups){
@@ -537,28 +682,42 @@ exports.configure = function (app) {
 		
 	});
 	
-	app.post('/user/:username/unmanage', app.oauth.authorise(), function (req, res){
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.del('/user/:username/unmanage', app.oauth.authorise(), function (req, res){
 		var groupname = req.body.groupname;
 		if(groupname.indexOf(req.params.username+':') !== 0){
 			groupname = req.params.username+':'+req.body.groupname;
 		}
-		
-		User.get(req.params.username, function (err1, user) {
-			if(err1){
-				return res.send({ error : err1});
+		Group.isManager(req.params.username, groupname, function (err, results) {
+			if(err){
+				return res.send({ error : err});
 			}
-			Group.get(groupname, function (err2, group) {
-				if(err2) {
-					return res.send({error : err2});
-				}
-				user.unmanage(group, function (err3){
-					if(err3) {
-						return res.send({error : err3});
+			if (results.result === 'yes'){
+				User.get(req.params.username, function (err1, user) {
+					if(err1){
+						return res.send({ error : err1});
 					}
-			    	res.send({result: "success"});
+					Group.get(groupname, function (err2, group) {
+						if(err2) {
+							return res.send({error : err2});
+						}
+						user.unmanage(group, function (err3){
+							if(err3) {
+								return res.send({error : err3});
+							}
+					    	res.send({result: "success"});
+						});
+					});
 				});
-			});
-		});
+			}
+		})
+		
 	});
 
 
@@ -625,6 +784,23 @@ exports.configure = function (app) {
 			});
 		});
 	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.get('/user/:username/joinedgroup/:joinedgroupname/member', app.oauth.authorise(), function (req, res){
+		Group.isMember (req.params.username, req.params.joinedgroupname, function (error, results) {
+			if(error) {
+				return res.send({error:error});
+			}		
+			res.send({member: results.result});
+		});
+	});
+	
 	
 	app.get('/getClientidAndToken', function(req, res){
 		auth.getClientidAndToken(function (err, results){

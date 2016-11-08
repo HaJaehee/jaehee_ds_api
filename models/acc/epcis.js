@@ -13,6 +13,7 @@
 var neo4j = require('neo4j');
 var errors = require('./errors');
 var User = require('./user');
+var Group = require('./group');
 var rest = require('../../rest');
 var config = require('../../conf.json');
 var neo4j_url = "http://"+config.NEO_ID+":"+config.NEO_PW+"@"+config.NEO_ADDRESS;
@@ -531,6 +532,73 @@ EPCIS.getFurnisherOthers = function (epcisname, callback) {
     });
 };
 
+EPCIS.getFurnisherGroup = function (epcisname, username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',
+        'MATCH (group)-[:furnish]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'RETURN group', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        Username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurnishergroups = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcisfurnishergroup = results[i].group.properties;
+        	epcisfurnishergroups.push(epcisfurnishergroup.groupname);
+        }
+
+        callback(null, epcisfurnishergroups);
+    });
+};
+
+EPCIS.getFurnisherOthersGroup = function (epcisname, username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',        
+        'MATCH (group)',
+        'WHERE not((group)-[:furnish]->(:EPCIS {epcisname: {thisEPCISname}}))',
+        'RETURN group', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        Username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcisfurnisherothersgroup = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcisfurnisherothergroup = results[i].group.properties;
+        	epcisfurnisherothersgroup.push(epcisfurnisherothergroup.groupname);
+        }
+
+        callback(null, epcisfurnisherothersgroup);
+    });
+};
+
 EPCIS.getSubscriber = function (epcisname, callback) {
 
     // Query all users and whether we follow each one or not:
@@ -594,6 +662,72 @@ EPCIS.getSubscriberOthers = function (epcisname, callback) {
     });
 };
 
+EPCIS.getSubscriberGroup = function (epcisname, username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)',
+        'MATCH (group)-[:subscribe]->(epcis:EPCIS {epcisname: {thisEPCISname}})',
+        'RETURN group', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        Username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcissubscribergroups = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcissubscribergroup = results[i].group.properties;
+        	epcissubscribergroups.push(epcissubscribergroup.groupname);
+        }
+
+        callback(null, epcissubscribergroups);
+    });
+};
+
+EPCIS.getSubscriberOthersGroup = function (epcisname, username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {Username}})-[:manage]->(group:Group)', 
+        'MATCH (group:Group)',
+        'WHERE not((group)-[:subscribe]->(:EPCIS {epcisname: {thisEPCISname}}))',
+        'RETURN group', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisEPCISname: epcisname,
+        Username: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var epcissubscriberothersgroup = [];
+
+        for (var i = 0; i < results.length; i++) {
+        	var epcissubscriberothergroup = results[i].group.properties;
+        	epcissubscriberothersgroup.push(epcissubscriberothergroup.groupname);
+        }
+
+        callback(null, epcissubscriberothersgroup);
+    });
+};
 
 EPCIS.isAuthoritybyTraversal = function(username, epcisname, callback){
 	EPCIS.get(epcisname, function(err, epcis){
