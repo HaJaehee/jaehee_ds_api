@@ -208,7 +208,10 @@ Group.prototype.unjoin = function(other, callback) {
 };
 
 /**
- * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.08
+ * @creator Jaehee Ha 
+ * lovesm135@kaist.ac.kr 
+ * created 
+ * 2016.11.08
  * 
  */
 Group.prototype.furnish = function(other, callback) {
@@ -230,7 +233,10 @@ Group.prototype.furnish = function(other, callback) {
 };
 
 /**
- * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.08
+ * @creator Jaehee Ha 
+ * lovesm135@kaist.ac.kr 
+ * created 
+ * 2016.11.08
  * 
  */
 Group.prototype.subscribe = function(other, callback) {
@@ -323,7 +329,10 @@ Group.get = function(groupname, callback) {
 };
 
 /**
- * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.08
+ * @creator Jaehee Ha 
+ * lovesm135@kaist.ac.kr 
+ * created 
+ * 2016.11.08
  * 
  */
 Group.isManager = function(username, groupname, callback) {
@@ -356,7 +365,10 @@ Group.isManager = function(username, groupname, callback) {
 };
 
 /**
- * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.08
+ * @creator Jaehee Ha 
+ * lovesm135@kaist.ac.kr 
+ * created 
+ * 2016.11.08
  * 
  */
 Group.isMember = function(username, groupname, callback) {
@@ -389,7 +401,10 @@ Group.isMember = function(username, groupname, callback) {
 };
 
 /**
- * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2016.11.05
+ * @creator Jaehee Ha 
+ * lovesm135@kaist.ac.kr 
+ * created 
+ * 2016.11.05
  * 
  */
 Group.getFurnish = function (groupname, callback) {
