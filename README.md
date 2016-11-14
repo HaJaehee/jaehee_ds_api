@@ -15,7 +15,7 @@ Group Role Based Access Control for EPCIS Access Authorization is implemented.
 
 
 ## Usage
-First of all, please configure the conf.json file
+First of all, please configure the conf.json file.
 This program works with EPCIS Access Control Server [https://github.com/HaJaehee/jaehee_epcis_ac],
 and EPCIS [https://github.com/woosungpil/epcis/tree/cs632_project].
 
