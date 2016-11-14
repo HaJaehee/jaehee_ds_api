@@ -51,7 +51,7 @@ exports.postOperation = function (uri, operation, args, callback) {
 			return callback(null, null);
 		} else {
 			console.log(body);
-			return callback("authentication failed, status code from rest api was " + res.statusCode);
+			return callback("authentication failed, status code from rest api was " + res.statusCode, body);
 		}
 	});	
 };

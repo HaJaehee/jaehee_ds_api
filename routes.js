@@ -7,8 +7,7 @@ var bodyParser = require('body-parser'),
 	Group = require('./models/acc/group'),
 	Token = require('./models/acc/token'),
 	rest = require('./rest'),
-	qs = require('querystring'),
-	dns = require('native-dns');
+	qs = require('querystring');
 	
 
 var config = require('./conf.json');
@@ -575,36 +574,34 @@ exports.configure = function (app) {
 	});
 	
 	/** 
-	 * post /user/:username/epcis/:epcisname/apicapture
+	 * post /user/:username/epcis/:epcisname/token/:token/apicapture
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.12
 	 *
 	 */
-	app.post('/user/:username/epcis/:epcisname/apicapture', function (req, res){
+	app.post('/user/:username/epcis/:epcisname/token/:token/apicapture', function (req, res){
 
 		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
 			}
-			var args = JSON.parse(Object.keys(req.body)[0]);
-			var epcisevent = args.epcisevent;
-			var clienttoken = args.clienttoken;
-			Token.isAdopter(req.params.username, clienttoken, function(err, authresults){
+			var epcisevent = req.body.epcisevent;
+			Token.isAdopter(req.params.username, req.params.token, function(err, authresults){
 				if(err) {
 					return res.send({error:err});
 				}
 				if (results.result === 'yes' && authresults.result === 'yes'){					
 					rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
 						if (error) {
-							return res.send({error: error});
+							return res.send({result: response});
 						} else {
-							res.send({result: "success"});
+							res.send({result: response});
 						}
 					});
 				}else {
-					return res.send({ error : "no permission"});
+					return res.send({error : "no permission"});
 				}
 			});
 		});
@@ -665,6 +662,8 @@ exports.configure = function (app) {
 						delete req.query.__proto__;
 					}
 					var epcisquery = jsonToQueryString(req.query);
+					console.log(epcisquery);
+					console.log(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery);
 					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
 						if (error) {
 							return res.send({error: error});
