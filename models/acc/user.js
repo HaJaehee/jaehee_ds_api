@@ -9,6 +9,8 @@
  * 2016.11.04
  * added furnishing functionality
  * 2016.11.05
+ * added group access control functionality
+ * 2016.11.11
  */
 
 var neo4j = require('neo4j');
@@ -165,6 +167,7 @@ User.prototype.patch = function (props, callback) {
 };
 
 /** 
+ * del
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -241,6 +244,34 @@ User.prototype.unmanage = function (other, callback) {
 };
 
 /** 
+ * adopt
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2016.11.13
+ * 
+ */ 
+User.prototype.adopt = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:Token {tokenname: {otherTokenname}})',
+        'MERGE (user) -[rel:adopt]-> (other)',
+    ].join('\n');
+
+    var params = {
+        thisUsername: this.username,
+        otherTokenname: other.tokenname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+
+/** 
+ * possess
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -267,34 +298,11 @@ User.prototype.possess = function (other, callback) {
     });
 };
 
-/** 
- * @creator Jaehee Ha
- * lovesm135@kaist.ac.kr
- * created
- * 2016.11.13
- * 
- */ 
-User.prototype.adopt = function (other, callback) {
-    var query = [
-        'MATCH (user:User {username: {thisUsername}})',
-        'MATCH (other:Token {tokenname: {otherTokenname}})',
-        'MERGE (user) -[rel:adopt]-> (other)',
-    ].join('\n');
 
-    var params = {
-        thisUsername: this.username,
-        otherTokenname: other.tokenname,
-    };
-
-    db.cypher({
-        query: query,
-        params: params,
-    }, function (err) {
-        callback(err);
-    });
 };
 
 /** 
+ * furnish
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -322,6 +330,7 @@ User.prototype.furnish = function (other, callback) {
 };
 
 /** 
+ * subscribe
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -349,6 +358,7 @@ User.prototype.subscribe = function (other, callback) {
 };
 
 /** 
+ * unpossess
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -404,6 +414,7 @@ User.get = function (username, callback) {
 };
 
 /** 
+ * getClientToken
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -446,6 +457,7 @@ User.getClientToken = function (username, callback) {
 };
 
 /** 
+ * getPossess
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -488,6 +500,7 @@ User.getPossess = function (username, callback) {
 };
 
 /** 
+ * getFurnish
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -530,6 +543,7 @@ User.getFurnish = function (username, callback) {
 };
 
 /** 
+ * getSubscribe
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
@@ -607,6 +621,7 @@ User.getManage = function (username, callback) {
 };
 
 /** 
+ * getJoin
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified

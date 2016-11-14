@@ -1,5 +1,17 @@
 // group.js
 // group model logic.
+/**
+ * @modifier Jaehee Ha 
+ * lovesm135@kaist.ac.kr
+ * modified
+ * 2016.10.31
+ * added subscription functionality
+ * 2016.11.08
+ * added furnishing functionality
+ * 2016.11.08
+ * added group access control functionality
+ * 2016.11.11
+ */
 
 var neo4j = require('neo4j');
 var errors = require('./errors');
@@ -208,6 +220,7 @@ Group.prototype.unjoin = function(other, callback) {
 };
 
 /**
+ * furnish
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
@@ -233,6 +246,7 @@ Group.prototype.furnish = function(other, callback) {
 };
 
 /**
+ * subscribe
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
@@ -329,10 +343,11 @@ Group.get = function(groupname, callback) {
 };
 
 /**
+ * isManager
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
- * 2016.11.08
+ * 2016.11.11
  * 
  */
 Group.isManager = function(username, groupname, callback) {
@@ -365,10 +380,11 @@ Group.isManager = function(username, groupname, callback) {
 };
 
 /**
+ * isMember
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
- * 2016.11.08
+ * 2016.11.11
  * 
  */
 Group.isMember = function(username, groupname, callback) {
@@ -401,10 +417,11 @@ Group.isMember = function(username, groupname, callback) {
 };
 
 /**
+ * getFurnish
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
- * 2016.11.05
+ * 2016.11.09
  * 
  */
 Group.getFurnish = function (groupname, callback) {
@@ -444,10 +461,11 @@ Group.getFurnish = function (groupname, callback) {
 };
 
 /**
+ * getSubscribe
  * @creator Jaehee Ha 
  * lovesm135@kaist.ac.kr 
  * created 
- * 2016.11.05
+ * 2016.11.09
  * 
  */
 Group.getSubscribe = function (groupname, callback) {

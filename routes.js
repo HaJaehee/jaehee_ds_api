@@ -38,13 +38,15 @@ exports.configure = function (app) {
 	app.use(app.oauth.errorHandler());
 	
 	/** 
+	 * del /epcis
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.10.31
-	 * 
+	 * deprecated
+	 * 2016.11.14
 	 */ 
-	app.del('/epcis'/*, app.oauth.authorise()*/, function (req, res){
+	/*app.del('/epcis', app.oauth.authorise(), function (req, res){
 		
 		EPCIS.delall(function(err){
 			if(err) {
@@ -55,29 +57,11 @@ exports.configure = function (app) {
 		});
 		
 	});
+	*/
 	
+	//---index features---
 	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.03
-	 * 
-	 */ 
-	app.del('/epcis/:epcisname', app.oauth.authorise(), function (req, res){
-		EPCIS.get(req.params.epcisname, function (err, epcis){
-			if (err) {
-				return res.send({error: err});
-			}
-			epcis.del(function(err){
-				if (err) {
-					return res.send({error: err});
-				}
-				res.send({result: "success"});
-			});
-		});
-	});
-	
-	/** 
+	 * get /user/:username/account
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -122,6 +106,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * post /user/:username/adopt
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -189,7 +174,12 @@ exports.configure = function (app) {
 		}
 	});
 	
+	//---index features end---
+	//---possess features---
+	
+
 	/** 
+	 * post /user/:username/possess
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -215,291 +205,9 @@ exports.configure = function (app) {
 			});
 		});
 	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.03
-	 * 
-	 */ 
-	app.get('/user/:username/epcis/:epcisname/possess', app.oauth.authorise(), function (req, res){
-		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){
-			if(err) {
-				return res.send({error:err});
-			}		
-			res.send({possessor: results.result});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.07
-	 * 
-	 */ 
-	app.get('/user/:username/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
-		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
-			if(err) {
-				return res.send({error:err});
-			}		
-			res.send({furnisher: results.result});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.05
-	 * 
-	 */ 
-	app.get('/user/:username/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
-		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
-			if(err) {
-				return res.send({error:err});
-			}		
-			res.send({subscriber: results.result});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.05
-	 * 
-	 */ 
-	app.post('/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
-		EPCIS.get(req.params.epcisname, function(err1, epcis){
-			if (err1) {
-				return res.send({error: err1});
-			}
-			User.get(req.body.epcisfurnishername, function(err2, user){
-				if(err2) {
-					return res.send({ error : err2});
-				}
-				user.furnish(epcis, function(err3){
-					if(err3) {
-						return res.send({ error : err3});
-					}
-					res.send({result: "success"});
-				});
-			});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.05
-	 * 
-	 */ 
-	app.post('/epcis/:epcisname/furnish/group', app.oauth.authorise(), function (req, res){
-		EPCIS.get(req.params.epcisname, function(err1, epcis){
-			if (err1) {
-				return res.send({error: err1});
-			}
-			Group.get(req.body.epcisfurnishergroupname, function(err2, group){
-				if(err2) {
-					return res.send({ error : err2});
-				}
-				group.furnish(epcis, function(err3){
-					if(err3) {
-						return res.send({ error : err3});
-					}
-					res.send({result: "success"});
-				});
-			});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.04
-	 * integrated
-	 * 2016.11.09
-	 */ 
-	app.get('/epcis/:epcisname/user/:username/furnisher', app.oauth.authorise(), function (req, res){
-		EPCIS.getFurnisher(req.params.epcisname, function (err, epcisfurnishers){
-			if(err) {
-				return res.send({error:err});
-			}
-			EPCIS.getFurnisherOthers(req.params.epcisname, function (err, epcisfurnisherothers){
-				if(err) {
-					return res.send({error:err});
-				}
-				EPCIS.getFurnisherGroup(req.params.epcisname, req.params.username, function (err, epcisfurnishergroups){
-					if(err) {
-						return res.send({error:err});
-					}
-					EPCIS.getFurnisherOthersGroup(req.params.epcisname, req.params.username, function (err, epcisfurnisherothersgroup){
-						if(err) {
-							return res.send({error:err});
-						}
-						res.send({epcisfurnishers:epcisfurnishers, epcisfurnisherothers:epcisfurnisherothers, epcisfurnishergroups:epcisfurnishergroups, epcisfurnisherothersgroup:epcisfurnisherothersgroup});
-					});
-				});
-			});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.04
-	 * 
-	 */
-	app.del('/unfurnepcis/:epcisname/user/:epcisfurnishername', app.oauth.authorise(), function (req, res){
-		
-		EPCIS.unfurnish(req.params.epcisfurnishername, req.params.epcisname, function (err){
-			if (err) {
-				return res.send({error: err});
-			}
-			res.send({result: "success"});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.08
-	 * 
-	 */
-	app.del('/unfurnepcis/:epcisname/group/:epcisfurnishergroupname', app.oauth.authorise(), function (req, res){
-		EPCIS.unfurnishGroup(req.params.epcisfurnishergroupname, req.params.epcisname, function (err){
-			if (err) {
-				return res.send({error: err});
-			}
-			res.send({result: "success"});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.04
-	 * 
-	 */ 
-	app.post('/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
-		EPCIS.get(req.params.epcisname, function(err1, epcis){
-			if (err1) {
-				return res.send({error: err1});
-			}
-			User.get(req.body.epcissubscribername, function(err2, user){
-				if(err2) {
-					return res.send({ error : err2});
-				}
-				user.subscribe(epcis, function(err3){
-					if(err3) {
-						return res.send({ error : err3});
-					}
-					res.send({result: "success"});
-				});
-			});
-		});
-	});
-	
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.05
-	 * 
-	 */ 
-	app.post('/epcis/:epcisname/subscribe/group', app.oauth.authorise(), function (req, res){
-		EPCIS.get(req.params.epcisname, function(err1, epcis){
-			if (err1) {
-				return res.send({error: err1});
-			}
-			Group.get(req.body.epcissubscribergroupname, function(err2, group){
-				if(err2) {
-					return res.send({ error : err2});
-				}
-				group.subscribe(epcis, function(err3){
-					if(err3) {
-						return res.send({ error : err3});
-					}
-					res.send({result: "success"});
-				});
-			});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.04
-	 * integrated
-	 * 2016.11.09
-	 */ 
-	app.get('/epcis/:epcisname/user/:username/subscriber', app.oauth.authorise(), function (req, res){
-		EPCIS.getSubscriber(req.params.epcisname, function (err, epcissubscribers){
-			if(err) {
-				return res.send({error:err});
-			}
-			EPCIS.getSubscriberOthers(req.params.epcisname, function (err, epcissubscriberothers){
-				if(err) {
-					return res.send({error:err});
-				}
-				EPCIS.getSubscriberGroup(req.params.epcisname, req.params.username, function (err, epcissubscribergroups){
-					if(err) {
-						return res.send({error:err});
-					}
-					EPCIS.getSubscriberOthersGroup(req.params.epcisname, req.params.username, function (err, epcissubscriberothersgroup){
-						if(err) {
-							return res.send({error:err});
-						}
-						res.send({epcissubscribers:epcissubscribers, epcissubscriberothers:epcissubscriberothers, epcissubscribergroups:epcissubscribergroups, epcissubscriberothersgroup:epcissubscriberothersgroup });
-					});
-				});
-			});
-		});
-	});
 
 	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.04
-	 * 
-	 */
-	app.del('/unsubsepcis/:epcisname/user/:epcissubscribername', app.oauth.authorise(), function (req, res){
-
-		EPCIS.unsubscribe(req.params.epcissubscribername, req.params.epcisname, function (err){
-			if (err) {
-				return res.send({error: err});
-			}
-			res.send({result: "success"});
-		});
-	});
-	
-	/** 
-	 * @creator Jaehee Ha
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016.11.08
-	 * 
-	 */
-	app.del('/unsubsepcis/:epcisname/group/:epcissubscribergroupname', app.oauth.authorise(), function (req, res){
-		EPCIS.unsubscribeGroup(req.params.epcissubscribergroupname, req.params.epcisname, function (err){
-			if (err) {
-				return res.send({error: err});
-			}
-			res.send({result: "success"});
-		});
-	});
-	
-	/** 
+	 * del /delepcis/:epcisname
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -532,6 +240,312 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /user/:username/epcis/:epcisname/possess
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.03
+	 * 
+	 */ 
+	app.get('/user/:username/epcis/:epcisname/possess', app.oauth.authorise(), function (req, res){
+		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({possessor: results.result});
+		});
+	});
+	
+	//---possess features end---
+	//---furnish features---
+	
+	/** 
+	 * get /user/:username/epcis/:epcisname/furnish
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.07
+	 * 
+	 */ 
+	app.get('/user/:username/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
+		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({furnisher: results.result});
+		});
+	});
+	
+	/** 
+	 * post /epcis/:epcisname/furnish
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/furnish', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			User.get(req.body.epcisfurnishername, function(err2, user){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				user.furnish(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * post /epcis/:epcisname/furnish/group
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/furnish/group', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			Group.get(req.body.epcisfurnishergroupname, function(err2, group){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				group.furnish(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * get /epcis/:epcisname/user/:username/furnisher
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * integrated
+	 * 2016.11.09
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/furnisher', app.oauth.authorise(), function (req, res){
+		EPCIS.getFurnisher(req.params.epcisname, function (err, epcisfurnishers){
+			if(err) {
+				return res.send({error:err});
+			}
+			EPCIS.getFurnisherOthers(req.params.epcisname, function (err, epcisfurnisherothers){
+				if(err) {
+					return res.send({error:err});
+				}
+				EPCIS.getFurnisherGroup(req.params.epcisname, req.params.username, function (err, epcisfurnishergroups){
+					if(err) {
+						return res.send({error:err});
+					}
+					EPCIS.getFurnisherOthersGroup(req.params.epcisname, req.params.username, function (err, epcisfurnisherothersgroup){
+						if(err) {
+							return res.send({error:err});
+						}
+						res.send({epcisfurnishers:epcisfurnishers, epcisfurnisherothers:epcisfurnisherothers, epcisfurnishergroups:epcisfurnishergroups, epcisfurnisherothersgroup:epcisfurnisherothersgroup});
+					});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * del /unfurnepcis/:epcisname/user/:epcisfurnishername
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * 
+	 */
+	app.del('/unfurnepcis/:epcisname/user/:epcisfurnishername', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.unfurnish(req.params.epcisfurnishername, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
+			}
+			res.send({result: "success"});
+		});
+	});
+	
+	/** 
+	 * del /unfurnepcis/:epcisname/group/:epcisfurnishergroupname
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.del('/unfurnepcis/:epcisname/group/:epcisfurnishergroupname', app.oauth.authorise(), function (req, res){
+		EPCIS.unfurnishGroup(req.params.epcisfurnishergroupname, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
+			}
+			res.send({result: "success"});
+		});
+	});
+	
+	//---furnish features end---
+	//---subscribe features---
+	
+	/** 
+	 * get /user/:username/epcis/:epcisname/subscribe
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.get('/user/:username/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
+		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}		
+			res.send({subscriber: results.result});
+		});
+	});
+	
+	/** 
+	 * post /epcis/:epcisname/subscribe
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/subscribe', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			User.get(req.body.epcissubscribername, function(err2, user){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				user.subscribe(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	
+	/** 
+	 * post /epcis/:epcisname/subscribe/group
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.05
+	 * 
+	 */ 
+	app.post('/epcis/:epcisname/subscribe/group', app.oauth.authorise(), function (req, res){
+		EPCIS.get(req.params.epcisname, function(err1, epcis){
+			if (err1) {
+				return res.send({error: err1});
+			}
+			Group.get(req.body.epcissubscribergroupname, function(err2, group){
+				if(err2) {
+					return res.send({ error : err2});
+				}
+				group.subscribe(epcis, function(err3){
+					if(err3) {
+						return res.send({ error : err3});
+					}
+					res.send({result: "success"});
+				});
+			});
+		});
+	});
+	
+	/** 
+	 * get /epcis/:epcisname/user/:username/subscriber
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * integrated
+	 * 2016.11.09
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/subscriber', app.oauth.authorise(), function (req, res){
+		EPCIS.getSubscriber(req.params.epcisname, function (err, epcissubscribers){
+			if(err) {
+				return res.send({error:err});
+			}
+			EPCIS.getSubscriberOthers(req.params.epcisname, function (err, epcissubscriberothers){
+				if(err) {
+					return res.send({error:err});
+				}
+				EPCIS.getSubscriberGroup(req.params.epcisname, req.params.username, function (err, epcissubscribergroups){
+					if(err) {
+						return res.send({error:err});
+					}
+					EPCIS.getSubscriberOthersGroup(req.params.epcisname, req.params.username, function (err, epcissubscriberothersgroup){
+						if(err) {
+							return res.send({error:err});
+						}
+						res.send({epcissubscribers:epcissubscribers, epcissubscriberothers:epcissubscriberothers, epcissubscribergroups:epcissubscribergroups, epcissubscriberothersgroup:epcissubscriberothersgroup });
+					});
+				});
+			});
+		});
+	});
+
+	/** 
+	 * del /unsubsepcis/:epcisname/user/:epcissubscribername
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.04
+	 * 
+	 */
+	app.del('/unsubsepcis/:epcisname/user/:epcissubscribername', app.oauth.authorise(), function (req, res){
+
+		EPCIS.unsubscribe(req.params.epcissubscribername, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
+			}
+			res.send({result: "success"});
+		});
+	});
+	
+	/** 
+	 * del /unsubsepcis/:epcisname/group/:epcissubscribergroupname
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.08
+	 * 
+	 */
+	app.del('/unsubsepcis/:epcisname/group/:epcissubscribergroupname', app.oauth.authorise(), function (req, res){
+		EPCIS.unsubscribeGroup(req.params.epcissubscribergroupname, req.params.epcisname, function (err){
+			if (err) {
+				return res.send({error: err});
+			}
+			res.send({result: "success"});
+		});
+	});
+	
+	//---subscribe features end---
+	//---capture features---
+	
+	/** 
+	 * post /user/:username/epcis/:epcisname/capture
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -561,6 +575,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * post /user/:username/epcis/:epcisname/apicapture
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -596,14 +611,18 @@ exports.configure = function (app) {
 		
 	});
 	
+	//---capture features end---
+	//---query features---
+	
 	/** 
+	 * get /user/:username/epcis/:epcisname/query?
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.05
 	 * 
 	 */
-	app.get('/user/:username/epcis/:epcisname/query', app.oauth.authorise(), function (req, res){
+	app.get('/user/:username/epcis/:epcisname/query?', app.oauth.authorise(), function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
@@ -628,13 +647,14 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /user/:username/epcis/:epcisname/token/:token/apiquery?
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.12
 	 * 
 	 */
-	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery', function (req, res){
+	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery?', function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
@@ -660,6 +680,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * jsonToQueryString
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -674,7 +695,11 @@ exports.configure = function (app) {
 	        }).join('&');
 	}
 	
+	//---query features end---
+	//---group features---
+	
 	/** 
+	 * get /joinedgroup/:joinedgroupname/furnish
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -691,6 +716,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /joinedgroup/:joinedgroupname/subscribe
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -732,6 +758,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /user/:username/group/:groupname/manage
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -748,6 +775,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * del /user/:username/unmanage
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -789,6 +817,7 @@ exports.configure = function (app) {
 
 
 	/** 
+	 * get /group/:groupname/join
 	 * @modifier Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * modified
@@ -816,6 +845,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /group/:groupname/other
 	 * @modifier Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * modified
@@ -843,6 +873,7 @@ exports.configure = function (app) {
 	});
 
 	/** 
+	 * post /group/:groupname/join
 	 * @modifier Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * modified
@@ -879,6 +910,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * post /group/:groupname/unjoin
 	 * @modifier Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * modified
@@ -915,6 +947,7 @@ exports.configure = function (app) {
 	});
 	
 	/** 
+	 * get /user/:username/joinedgroup/:joinedgroupname/member
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
@@ -930,6 +963,9 @@ exports.configure = function (app) {
 		});
 	});
 	
+	
+	//---group features end---
+	//---account features---
 	
 	app.get('/getClientidAndToken', function(req, res){
 		auth.getClientidAndToken(function (err, results){
@@ -981,5 +1017,7 @@ exports.configure = function (app) {
 			});
 		});
 	});
+	
+	//---account features end---
 };
 	

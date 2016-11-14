@@ -29,7 +29,7 @@ var express = require('express')
   , http = require('http')
   , auth = require("./models/acc/auth")
   , path = require('path')
-  , ds_socket = require('./ds_socket');
+  , epcis_ac_socket = require('./epcis_ac_socket');
 
 var app = express();
 
@@ -68,7 +68,7 @@ var httpServer = http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
-ds_socket.configure(httpServer);
+epcis_ac_socket.configure(httpServer);
 }
 
 

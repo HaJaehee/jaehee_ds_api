@@ -45,6 +45,7 @@ var db = pgp(cn); // database instance;
  */
 
 /** 
+ * getAccessToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -114,6 +115,7 @@ model.getAccessToken = function (bearerToken, callback) {
 };
 
 /** 
+ * getClient
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -186,6 +188,7 @@ model.getClient = function (clientId, clientSecret, callback) {
 };
 
 /** 
+ * getRefreshToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -237,6 +240,7 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
 };
 
 /** 
+ * getAccessToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -280,6 +284,7 @@ model.saveAccessToken = function (accessToken, clientId, expires, userId, callba
 };
 
 /** 
+ * saveRefreshToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -391,6 +396,7 @@ model.getUserbyUsername = function (username, callback) {
 };
 
 /** 
+ * saveUser
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -432,7 +438,8 @@ model.saveUser = function (username, password, callback) {
   });*/
 };
 
-/** 
+/**
+ * saveOauthClient 
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -537,6 +544,7 @@ model.deleteExpiredRefreshTokens = function (callback){
 	});*/
 };
 /** 
+ * getUseridbyToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -578,6 +586,7 @@ model.getUseridbyToken = function (token, callback){
 };
 
 /** 
+ * getUsernamebyUserid
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -616,6 +625,7 @@ model.getUsernamebyUserid = function (userid, callback){
 	});*/
 };
 /** 
+ * getUserbyToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -652,6 +662,7 @@ model.getUserbyToken = function (token, callback){
 };
 
 /** 
+ * getClientidAndToken
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * modified for EPCIS Access Control
@@ -683,6 +694,7 @@ model.getClientidAndToken = function (callback){
 };
 
 /** 
+ * isMatchToken
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created for EPCIS Access Control Client API

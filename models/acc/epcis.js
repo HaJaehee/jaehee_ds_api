@@ -9,6 +9,8 @@
  * 2016.11.04
  * added furnishing functionality
  * 2016.11.05
+ * added group access control functionality
+ * 2016.11.11
  */
 var neo4j = require('neo4j');
 var errors = require('./errors');
