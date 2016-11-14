@@ -3,8 +3,9 @@ var bodyParser = require('body-parser'),
 	md5 =  require('md5'),
 	auth = require('./models/acc/auth'),
 	User = require('./models/acc/user'),
-	EPCIS = require('./models/acc/epcis')
+	EPCIS = require('./models/acc/epcis'),
 	Group = require('./models/acc/group'),
+	Token = require('./models/acc/token'),
 	rest = require('./rest'),
 	qs = require('querystring'),
 	dns = require('native-dns');
@@ -83,6 +84,8 @@ exports.configure = function (app) {
 	 * 2016.11.03
 	 * integrated
 	 * 2016.11.09
+	 * added client token feature
+	 * 2016.11.13
 	 */ 
 	app.get('/user/:username/account', app.oauth.authorise(), function (req, res){
 		User.getPossess(req.params.username, function (err, epciss){
@@ -105,7 +108,12 @@ exports.configure = function (app) {
 							if(err) {
 								return res.send({error:err});
 							}
-							res.send({epciss:epciss, epcisfurns:epcisfurns, epcissubss:epcissubss, groups:groups, joinedgroups:joinedgroups});
+							User.getClientToken(req.params.username, function (err, clienttoken){
+								if(err) {
+									return res.send({error:err});
+								}
+								res.send({epciss:epciss, epcisfurns:epcisfurns, epcissubss:epcissubss, groups:groups, joinedgroups:joinedgroups, clienttoken:clienttoken});
+							});
 						});
 					});
 				});
@@ -113,7 +121,73 @@ exports.configure = function (app) {
 		});
 	});
 	
-
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.13
+	 * 
+	 */ 
+	app.post('/user/:username/adopt', app.oauth.authorise(), function (req, res){
+		var username = req.params.username;
+		var accesstoken = req.body.accesstoken;
+		var clienttoken = req.body.clienttoken;
+		if (clienttoken === ''){
+			Token.create({'tokenname':accesstoken}, function (err, token){
+				if(err){
+					res.send({error:err});
+					return;
+				}else{
+					User.get(username, function(err2, user){
+						if(err2) {
+							return res.send({ error : err2});
+						}
+						user.adopt(token, function(err3){
+							if(err3) {
+								return res.send({ error : err3});
+							}
+							res.send({result:token._node.properties.tokenname});
+						});
+					});
+				}
+			});
+		}else{
+			Token.isAdopter(username, clienttoken, function (err, results){
+				if(err){
+					res.send({error:err});
+					return;
+				}else{
+					if(results.result === 'yes'){
+						Token.del (username, clienttoken, function (err, results){
+							if(err){
+								res.send({error:err});
+								return;
+							}else{
+								Token.create({'tokenname':accesstoken}, function (err, token){
+									if(err){
+										res.send({error:err});
+										return;
+									}else{
+										User.get(username, function(err2, user){
+											if(err2) {
+												return res.send({ error : err2});
+											}
+											user.adopt(token, function(err3){
+												if(err3) {
+													return res.send({ error : err3});
+												}
+												res.send({result: token._node.properties.tokenname});
+											});
+										});
+									}
+								});
+							}
+						});
+					}
+				}
+			});
+		}
+	});
 	
 	/** 
 	 * @creator Jaehee Ha
@@ -490,6 +564,42 @@ exports.configure = function (app) {
 	 * @creator Jaehee Ha
 	 * lovesm135@kaist.ac.kr
 	 * created
+	 * 2016.11.12
+	 *
+	 */
+	app.post('/user/:username/epcis/:epcisname/apicapture', function (req, res){
+
+		EPCIS.isFurnisher(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}
+			var args = JSON.parse(Object.keys(req.body)[0]);
+			var epcisevent = args.epcisevent;
+			var clienttoken = args.clienttoken;
+			Token.isAdopter(req.params.username, clienttoken, function(err, authresults){
+				if(err) {
+					return res.send({error:err});
+				}
+				if (results.result === 'yes' && authresults.result === 'yes'){					
+					rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
+						if (error) {
+							return res.send({error: error});
+						} else {
+							res.send({result: "success"});
+						}
+					});
+				}else {
+					return res.send({ error : "no permission"});
+				}
+			});
+		});
+		
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
 	 * 2016.11.05
 	 * 
 	 */
@@ -515,6 +625,38 @@ exports.configure = function (app) {
 			}
 		});
 		
+	});
+	
+	/** 
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.12
+	 * 
+	 */
+	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery', function (req, res){
+		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
+			if(err) {
+				return res.send({error:err});
+			}
+			Token.isAdopter(req.params.username, req.params.token, function(err, authresults){
+				if (results.result === 'yes' && authresults.result === 'yes'){
+					if (req.query !== null && req.query.__proto__ !== null)	{
+						delete req.query.__proto__;
+					}
+					var epcisquery = jsonToQueryString(req.query);
+					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
+						if (error) {
+							return res.send({error: error});
+						} else {
+							res.send(response.body);
+						}
+					});
+				}else {
+					return res.send({ error : "no permission"});
+				}
+			})
+		});
 	});
 	
 	/** 

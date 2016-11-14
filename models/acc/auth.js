@@ -681,3 +681,44 @@ model.getClientidAndToken = function (callback){
 	    });
 	
 };
+
+/** 
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created for EPCIS Access Control Client API
+ * 2016.11.12
+ * 
+ */ 
+model.isMatchToken = function(username, accesstoken, callback){
+	accesstoken = accesstoken.toLowerCase();	
+	db.connect()
+	.then(function (obj){
+		sco = obj;
+		return sco.query('SELECT access_token, client_id, expires, user_id FROM oauth_access_tokens ' +
+		        'WHERE access_token = $1', [accesstoken]);
+	})
+	.then(function (data){
+		console.log(data);
+		
+		if(data.length){
+			var token = data[0];
+			console.log('getAccessToken'+JSON.stringify(data));
+			
+			if (token.client_id === username)
+				return callback({result:'yes'});
+			else
+				return callback({result:'no'});
+		} else {
+			callback({result:'no'});
+		}
+	})
+    .catch(function (error) {
+        console.log(error); // display the error; 
+    	return callback(error);
+    })
+    .finally(function () {
+        if (sco) {
+            sco.done(); // release the connection, if it was successful; 
+        }
+    });
+};

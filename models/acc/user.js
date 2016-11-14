@@ -15,6 +15,7 @@ var neo4j = require('neo4j');
 var errors = require('./errors');
 var EPCIS = require('./epcis');
 var Group = require('./group');
+var Token = require('./token');
 var config = require('../../conf.json');
 var neo4j_url = "http://"+config.NEO_ID+":"+config.NEO_PW+"@"+config.NEO_ADDRESS;
 
@@ -270,6 +271,33 @@ User.prototype.possess = function (other, callback) {
  * @creator Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
+ * 2016.11.13
+ * 
+ */ 
+User.prototype.adopt = function (other, callback) {
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})',
+        'MATCH (other:Token {tokenname: {otherTokenname}})',
+        'MERGE (user) -[rel:adopt]-> (other)',
+    ].join('\n');
+
+    var params = {
+        thisUsername: this.username,
+        otherTokenname: other.tokenname,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err) {
+        callback(err);
+    });
+};
+
+/** 
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
  * 2016.11.05
  * 
  */ 
@@ -375,6 +403,47 @@ User.get = function (username, callback) {
     });
 };
 
+/** 
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2016.11.13
+ * 
+ */ 
+User.getClientToken = function (username, callback) {
+
+    // Query all users and whether we follow each one or not:
+    var query = [
+        'MATCH (user:User {username: {thisUsername}})-[:adopt]->(token:Token)',
+        'RETURN token', // COUNT(rel) is a hack for 1 or 0
+    ].join('\n');
+
+    var params = {
+        thisUsername: username,
+    };
+
+    db.cypher({
+        query: query,
+        params: params,
+    }, function (err, results) {
+        if (err) {
+        	return callback(err);
+        }
+
+        var clienttoken;
+
+        for (var i = 0; i < results.length; i++) {
+
+        	var token = new Token(results[i]['token']);
+        	if(!token.tokenname) {
+        		return callback("Token exists, but its tokenname does not exist");
+        	}
+        	clienttoken = token.tokenname;
+        }
+
+        callback(null, clienttoken);
+    });
+};
 
 /** 
  * @creator Jaehee Ha
