@@ -29,12 +29,12 @@ var express = require('express')
   , http = require('http')
   , auth = require("./models/acc/auth")
   , path = require('path')
-  , epcis_ac_socket = require('./epcis_ac_socket');
-
+  , epcis_ac_socket = require('./epcis_ac_socket')
+  , config = require('./conf.json');
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 3001);
+app.set('port', process.env.PORT || config.PORT);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());

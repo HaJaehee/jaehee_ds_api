@@ -409,7 +409,7 @@ User.get = function (username, callback) {
             return callback(err);
         }
         var user = new User(results[0]['user']);
-        callback(null, user);
+        return callback(null, user);
     });
 };
 

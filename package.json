@@ -1,5 +1,5 @@
 {
-  "name": "EPCIS AC API",
+  "name": "epcis_ac_api",
   "version": "2.0.0",
   "private": true,
   "scripts": {

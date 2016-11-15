@@ -619,7 +619,7 @@ exports.configure = function (app) {
 	 * 2016.11.05
 	 * 
 	 */
-	app.get('/user/:username/epcis/:epcisname/query?', app.oauth.authorise(), function (req, res){
+	app.get('/user/:username/epcis/:epcisname/query', app.oauth.authorise(), function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
@@ -629,10 +629,11 @@ exports.configure = function (app) {
 					delete req.query.__proto__;
 				}
 				var epcisquery = jsonToQueryString(req.query);
-				rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
+				rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "", null, function (error, response) {
 					if (error) {
 						return res.send({error: error});
 					} else {
+						console.log(response.body);
 						res.send(response.body);
 					}
 				});
@@ -651,7 +652,7 @@ exports.configure = function (app) {
 	 * 2016.11.12
 	 * 
 	 */
-	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery?', function (req, res){
+	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery', function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
 			if(err) {
 				return res.send({error:err});
@@ -662,12 +663,11 @@ exports.configure = function (app) {
 						delete req.query.__proto__;
 					}
 					var epcisquery = jsonToQueryString(req.query);
-					console.log(epcisquery);
-					console.log(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery);
-					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+"&"+epcisquery, "" , "", function (error, response) {
+					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "" , null, function (error, response) {
 						if (error) {
 							return res.send({error: error});
 						} else {
+							
 							res.send(response.body);
 						}
 					});
@@ -687,7 +687,7 @@ exports.configure = function (app) {
 	 * 
 	 */
 	var jsonToQueryString = function (json) {
-	    return '' + 
+	    return '&' + 
 	        Object.keys(json).map(function(key) {
 	            return encodeURIComponent(key) + '=' +
 	                encodeURIComponent(json[key]);

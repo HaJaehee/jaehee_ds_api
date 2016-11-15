@@ -314,7 +314,7 @@ db.createConstraint({
     	throw err;     // Failing fast for now, by crash the application.
     }
     if (constraint) {
-        console.log('(Registered unique thingnames constraint.)');
+        console.log('(Registered unique tokennames constraint.)');
     } else {
         // Constraint already present; no need to log anything.
     }
