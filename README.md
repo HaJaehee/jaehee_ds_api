@@ -16,13 +16,13 @@ Group Role Based Access Control for EPCIS Access Authorization is implemented.<b
 
 ## Usage
 First of all, please configure the conf.json file.<br/>
-This program works with EPCIS Access Control Server [https://github.com/HaJaehee/jaehee_epcis_ac],<br/>
-and EPCIS [https://github.com/woosungpil/epcis/tree/cs632_project].<br/>
+This program works with [EPCIS Access Control Server](https://github.com/HaJaehee/jaehee_epcis_ac),<br/>
+and [EPCIS](https://github.com/woosungpil/epcis/tree/cs632_project).<br/>
 
 
 ## Developing
 Jaehee Ha implemented EPCIS Access Control API Server.<br/>
-EPCIS Access Control API Server is based on DiscoveryService Access Control API Server.<br/><br/>
+EPCIS Access Control API Server is based on DiscoveryService Access Control API Server.<br/>
 email: lovesm135@kaist.ac.kr<br/>
 
 
@@ -51,7 +51,7 @@ psql (9.6.0)<br/>
 Type "help" for help.<br/>
 
 epcis_ac=# CREATE TABLE oauth_access_tokens(access_token text,client_id text,expires timestamp,user_id text);<br/>
-CREATE TABLE<br/><br/>
+CREATE TABLE<br/>
 epcis_ac=# CREATE TABLE oauth_clients(client_id text,client_secret text,redirect_uri text);<br/>
 CREATE TABLE<br/>
 epcis_ac=# CREATE TABLE oauth_refresh_tokens(refresh_token text,client_id text,expires timestamp,user_id text);<br/>
