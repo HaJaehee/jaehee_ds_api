@@ -195,6 +195,7 @@ exports.configure = function (app) {
 				if(err2) {
 					return res.send({ error : err2});
 				}
+				
 				user.possess(epcis, function(err3){
 					if(err3) {
 						return res.send({ error : err3});

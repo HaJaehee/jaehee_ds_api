@@ -183,10 +183,11 @@ User.prototype.del = function (callback) {
 	var query = [
 	   'MATCH (user:User {username: {thisUsername}})',
 	   'MATCH (user)-[:manage]->(group)',
+	   'MATCH (user)-[:join]->(group)',
 	   'MATCH (user)-[:possess]->(epcis)',
 	   'MATCH (user)-[:subscribe]->(epcis)',
 	   'MATCH (user)-[:furnish]->(epcis)',
-	   'DETACH DELETE user, group, epcis'
+	   'DETACH DELETE user'
 	   
 	].join('\n');
 
@@ -269,6 +270,7 @@ User.prototype.adopt = function (other, callback) {
     }, function (err) {
         callback(err);
     });
+};
 
 /** 
  * possess
@@ -296,9 +298,6 @@ User.prototype.possess = function (other, callback) {
     }, function (err) {
         callback(err);
     });
-};
-
-
 };
 
 /** 
