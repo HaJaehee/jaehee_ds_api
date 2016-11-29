@@ -45,8 +45,8 @@ User.VALIDATION_INFO = {
         required: true,
         minLength: 2,
         maxLength: 25,
-        pattern: /^[A-Za-z0-9_@.]+$/,
-        message: '2-25 characters; letters, numbers, underscores, \'.\', and \'@\' only.'
+        pattern: /^[A-Za-z0-9]+$/,
+        message: '2-25 characters; letters, and numbers only.'
     },
 };
 
@@ -187,6 +187,7 @@ User.prototype.del = function (callback) {
 	   'MATCH (user)-[:possess]->(epcis)',
 	   'MATCH (user)-[:subscribe]->(epcis)',
 	   'MATCH (user)-[:furnish]->(epcis)',
+	   'MATCH (user)-[:adopt]->(token)',
 	   'DETACH DELETE user'
 	   
 	].join('\n');
@@ -695,7 +696,7 @@ User.create = function (props, callback) {
 
 // Static initialization:
 
-// Register our unique username constraint.
+// Register our unique user constraint.
 // TODO: This is done async'ly (fire and forget) here for simplicity,
 // but this would be better as a formal schema migration script or similar.
 db.createConstraint({

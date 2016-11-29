@@ -38,8 +38,8 @@ Token.VALIDATION_INFO = {
         required: true,
         minLength: 2,
         maxLength: 50,
-        pattern: /^[A-Za-z0-9.:]+$/,
-        message: '2-25 characters; letters, numbers, and \'.\' only.'
+        pattern: /^[A-Za-z0-9]+$/,
+        message: '2-50 characters; letters, and numbers only.'
     },
 };
 
@@ -303,7 +303,7 @@ Token.get = function (tokenname, callback) {
 
 // Static initialization:
 
-// Register our unique gs1code constraint.
+// Register our unique token constraint.
 // TODO: This is done async'ly (fire and forget) here for simplicity,
 // but this would be better as a formal schema migration script or similar.
 db.createConstraint({

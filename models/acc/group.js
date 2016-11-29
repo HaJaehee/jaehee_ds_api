@@ -505,7 +505,9 @@ Group.getSubscribe = function (groupname, callback) {
 
 // Creates the group and persists (saves) it to the db, incl. indexing it:
 Group.create = function(props, callback) {
-	var query = [ 'CREATE (group:Group {props})', 'RETURN group', ].join('\n');
+	var query = [ 'CREATE (group:Group {props})', 
+	              'RETURN group', 
+	              ].join('\n');
 
 	var params = {
 		props : validate(props),

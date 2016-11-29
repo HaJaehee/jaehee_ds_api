@@ -14,8 +14,8 @@ var config = require('./conf.json');
 var EPCIS_CaptureURL = config.EPCIS_CAPTURE_URL,
 	EPCIS_QueryURL = config.EPCIS_QUERY_URL,
 	EPCIS_Address = config.EPCIS_ADDRESS;
-var EPCIS_Capture_Address = "http://"+EPCIS_Address+EPCIS_CaptureURL,
-	EPCIS_Query_Address = "http://"+EPCIS_Address+EPCIS_QueryURL;
+
+
 
 
 exports.configure = function (app) {	
@@ -191,18 +191,22 @@ exports.configure = function (app) {
 				res.send({ error : err1});
 				return;
 			}
-			User.get(req.params.username, function(err2, user){
+			EPCIS.setURL (epcis.epcisname, {'epcisurl':EPCIS_Address}, function(err2, results){
 				if(err2) {
 					return res.send({ error : err2});
 				}
-				
-				user.possess(epcis, function(err3){
+				User.get(req.params.username, function(err3, user){
 					if(err3) {
 						return res.send({ error : err3});
 					}
-					res.send({result: "success"});
+					user.possess(epcis, function(err4){
+						if(err4) {
+							return res.send({ error : err4});
+						}
+						res.send({result: "success"});
+					});
 				});
-			});
+			})
 		});
 	});
 
@@ -253,6 +257,66 @@ exports.configure = function (app) {
 				return res.send({error:err});
 			}		
 			res.send({possessor: results.result});
+		});
+	});
+	
+	/** 
+	 * post /epcis/:epcisname/editurl
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.29
+	 * @TODO
+	 */ 
+	app.post('/epcis/:epcisname/editurl', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.isPossessor(req.body.username, req.params.epcisname, function(err, results) {
+			if(err){
+				res.send({ error : err});
+				return;
+			}
+			if ( results.result === 'yes')	{
+				EPCIS.setURL(req.params.epcisname, {'epcisurl':req.body.epcisurl}, function(err1, epcis){
+					if(err1){
+						res.send({ error : err1});
+						return;
+					}
+					res.send({result: "success"});
+				});
+			}else {
+				return res.send({ error : "no permission"});
+			}
+			
+		});
+	});
+	
+	/** 
+	 * post /epcis/:epcisname/user/:username/geturl
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2016.11.29
+	 * 
+	 */ 
+	app.get('/epcis/:epcisname/user/:username/geturl', app.oauth.authorise(), function (req, res){
+		
+		EPCIS.isPossessor(req.params.username, req.params.epcisname, function(err, results) {
+			if(err){
+				res.send({ error : err});
+				return;
+			}
+			if ( results.result === 'yes')	{
+				EPCIS.getURL(req.params.epcisname, function(err1, epcisurl){
+					if(err1){
+						res.send({ error : err1});
+						return;
+					}
+					res.send({'epcisurl': epcisurl});
+				});
+			}else {
+				return res.send({ error : "no permission"});
+			}
+			
 		});
 	});
 	
@@ -550,7 +614,8 @@ exports.configure = function (app) {
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.04
-	 *
+	 * added url features
+	 * 2016.11.29
 	 */
 	app.post('/user/:username/epcis/:epcisname/capture', app.oauth.authorise(), function (req, res){
 
@@ -559,14 +624,24 @@ exports.configure = function (app) {
 				return res.send({error:err});
 			}
 			if ( results.result === 'yes')	{
-				var epcisevent = req.body.epcisevent;
-				rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
-					if (error) {
-						return res.send({error: error});
-					} else {
-						res.send({result: "success"});
+				var epcisurl = null;
+				EPCIS.getURL(req.params.epcisname, function(err1, result){
+					if(err1){
+						res.send({ error : err1});
+						return;
 					}
+					epcisurl = result;
+					var epcisevent = req.body.epcisevent;
+					var EPCIS_Capture_Address = "http://"+epcisurl+EPCIS_CaptureURL;
+					rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
+						if (error) {
+							return res.send({error: error});
+						} else {
+							res.send({result: "success"});
+						}
+					});
 				});
+
 			}else {
 				return res.send({ error : "no permission"});
 			}
@@ -580,6 +655,8 @@ exports.configure = function (app) {
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.12
+	 * added url features
+	 * 2016.11.29
 	 *
 	 */
 	app.post('/user/:username/epcis/:epcisname/token/:token/apicapture', function (req, res){
@@ -588,19 +665,30 @@ exports.configure = function (app) {
 			if(err) {
 				return res.send({error:err});
 			}
-			var epcisevent = req.body.epcisevent;
+			
 			Token.isAdopter(req.params.username, req.params.token, function(err, authresults){
 				if(err) {
 					return res.send({error:err});
 				}
-				if (results.result === 'yes' && authresults.result === 'yes'){					
-					rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
-						if (error) {
-							return res.send({result: response});
-						} else {
-							res.send({result: response});
+				if (results.result === 'yes' && authresults.result === 'yes'){	
+					var epcisurl = null;
+					EPCIS.getURL(req.params.epcisname, function(err1, result){
+						if(err1){
+							res.send({ error : err1});
+							return;
 						}
+						epcisurl = result;
+						var epcisevent = req.body.epcisevent;
+						var EPCIS_Capture_Address = "http://"+epcisurl+EPCIS_CaptureURL;
+						rest.postOperation(EPCIS_Capture_Address, "" , epcisevent, function (error, response) {
+							if (error) {
+								return res.send({result: response});
+							} else {
+								res.send({result: response});
+							}
+						});
 					});
+
 				}else {
 					return res.send({error : "no permission"});
 				}
@@ -626,18 +714,27 @@ exports.configure = function (app) {
 				return res.send({error:err});
 			}
 			if (results.result === 'yes'){
-				if (req.query !== null && req.query.__proto__ !== null)	{
-					delete req.query.__proto__;
-				}
-				var epcisquery = jsonToQueryString(req.query);
-				rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "", null, function (error, response) {
-					if (error) {
-						return res.send({error: error});
-					} else {
-						console.log(response.body);
-						res.send(response.body);
+				var epcisurl = null;
+				EPCIS.getURL(req.params.epcisname, function(err1, result){
+					if(err1){
+						res.send({ error : err1});
+						return;
 					}
+					epcisurl = result;
+					if (req.query !== null && req.query.__proto__ !== null)	{
+						delete req.query.__proto__;
+					}
+					var epcisquery = jsonToQueryString(req.query);
+					var EPCIS_Query_Address = "http://"+epcisurl+EPCIS_QueryURL;
+					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "", null, function (error, response) {
+						if (error) {
+							return res.send({error: error});
+						} else {
+							res.send(response.body);
+						}
+					});
 				});
+
 			}else {
 				return res.send({ error : "no permission"});
 			}
@@ -660,18 +757,28 @@ exports.configure = function (app) {
 			}
 			Token.isAdopter(req.params.username, req.params.token, function(err, authresults){
 				if (results.result === 'yes' && authresults.result === 'yes'){
-					if (req.query !== null && req.query.__proto__ !== null)	{
-						delete req.query.__proto__;
-					}
-					var epcisquery = jsonToQueryString(req.query);
-					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "" , null, function (error, response) {
-						if (error) {
-							return res.send({error: error});
-						} else {
-							
-							res.send(response.body);
+					var epcisurl = null;
+					EPCIS.getURL(req.params.epcisname, function(err1, result){
+						if(err1){
+							res.send({ error : err1});
+							return;
 						}
+						epcisurl = result;
+						if (req.query !== null && req.query.__proto__ !== null)	{
+							delete req.query.__proto__;
+						}
+						var epcisquery = jsonToQueryString(req.query);
+						var EPCIS_Query_Address = "http://"+epcisurl+EPCIS_QueryURL;
+						rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "" , null, function (error, response) {
+							if (error) {
+								return res.send({error: error});
+							} else {
+								
+								res.send(response.body);
+							}
+						});
 					});
+					
 				}else {
 					return res.send({ error : "no permission"});
 				}
@@ -970,7 +1077,6 @@ exports.configure = function (app) {
 	app.get('/getClientidAndToken', function(req, res){
 		auth.getClientidAndToken(function (err, results){
 			if (err){
-				console.log(err);
 				return res.send({error: err});
 			}
 			return res.send(results);
