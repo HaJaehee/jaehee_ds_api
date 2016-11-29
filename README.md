@@ -1,23 +1,24 @@
 
 
 # EPCIS Access Control API Server
-Version 2.0.0 <br/>
-2016.11.14<br/>
+Version 3.0.0 <br/>
+2016.11.29<br/>
 
 
 ## Features
 OAuth 2.0 is applied.<br/>
 Token based access control is applied.<br/>
-EPCIS management is implemented.<br/>
+EPCIS name based management is implemented.<br/>
 Individual Role Based Access Control for EPCIS Access Authorization is implemented.<br/>
 Group management is implemented.<br/>
 Group Role Based Access Control for EPCIS Access Authorization is implemented.<br/>
+EPCIS URL management is implemented.<br/>
 
 
 ## Usage
 First of all, please configure the conf.json file.<br/>
 This program works with [EPCIS Access Control Server](https://github.com/HaJaehee/jaehee_epcis_ac),<br/>
-and [EPCIS](https://github.com/woosungpil/epcis/tree/cs632_project).<br/>
+and [EPCIS-cs632_project](https://github.com/woosungpil/epcis/tree/cs632_project).<br/>
 
 
 ## Developing
