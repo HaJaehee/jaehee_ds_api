@@ -266,7 +266,7 @@ exports.configure = function (app) {
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.29
-	 * @TODO
+	 * 
 	 */ 
 	app.post('/epcis/:epcisname/editurl', app.oauth.authorise(), function (req, res){
 		
