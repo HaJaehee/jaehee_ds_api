@@ -225,16 +225,26 @@ exports.configure = function (app) {
 			}		
 			
 			if (results.result === 'yes'){
-				EPCIS.del(req.body.username, req.body.epcisname, function (err){
-					if (err) {
-						return res.send({error: err});
+				var epcisurl = null;
+				EPCIS.getURL(req.params.epcisname, function(err1, result){
+					if(err1){
+						res.send({ error : err1});
+						return;
 					}
-					rest.delOperation(EPCIS_Capture_Address, "" , req.body.epcisname, function (error, response) {
-						if (error) {
-							return res.send({error: error});
-						} else {
-							res.send({result: "success"});
+					epcisurl = result;
+					EPCIS.del(req.body.username, req.body.epcisname, function (err){
+						if (err) {
+							return res.send({error: err});
 						}
+						var epcisevent = req.body.epcisevent;
+						var EPCIS_Capture_Address = "http://"+epcisurl+EPCIS_CaptureURL;
+						rest.delOperation(EPCIS_Capture_Address, "" , req.body.epcisname, function (error, response) {
+							if (error) {
+								return res.send({error: error});
+							} else {
+								res.send({result: "success"});
+							}
+						});
 					});
 				});
 			}else {
@@ -657,7 +667,6 @@ exports.configure = function (app) {
 	 * 2016.11.12
 	 * added url features
 	 * 2016.11.29
-	 *
 	 */
 	app.post('/user/:username/epcis/:epcisname/token/:token/apicapture', function (req, res){
 
@@ -706,7 +715,8 @@ exports.configure = function (app) {
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.05
-	 * 
+	 * removed querying with epcisname 
+	 * 2016.11.30
 	 */
 	app.get('/user/:username/epcis/:epcisname/query', app.oauth.authorise(), function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
@@ -726,7 +736,8 @@ exports.configure = function (app) {
 					}
 					var epcisquery = jsonToQueryString(req.query);
 					var EPCIS_Query_Address = "http://"+epcisurl+EPCIS_QueryURL;
-					rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "", null, function (error, response) {
+					rest.getOperationResNoJSON(EPCIS_Query_Address+epcisquery, "", null, function (error, response) {
+					//rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "", null, function (error, response) {
 						if (error) {
 							return res.send({error: error});
 						} else {
@@ -748,7 +759,8 @@ exports.configure = function (app) {
 	 * lovesm135@kaist.ac.kr
 	 * created
 	 * 2016.11.12
-	 * 
+	 * removed querying with epcisname 
+	 * 2016.11.30
 	 */
 	app.get('/user/:username/epcis/:epcisname/token/:token/apiquery', function (req, res){
 		EPCIS.isSubscriber(req.params.username, req.params.epcisname, function(err, results){
@@ -769,7 +781,8 @@ exports.configure = function (app) {
 						}
 						var epcisquery = jsonToQueryString(req.query);
 						var EPCIS_Query_Address = "http://"+epcisurl+EPCIS_QueryURL;
-						rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "" , null, function (error, response) {
+						rest.getOperationResNoJSON(EPCIS_Query_Address+epcisquery, "" , null, function (error, response) {
+						//rest.getOperationResNoJSON(EPCIS_Query_Address+"EPCISName="+req.params.epcisname+epcisquery, "" , null, function (error, response) {
 							if (error) {
 								return res.send({error: error});
 							} else {
@@ -795,7 +808,7 @@ exports.configure = function (app) {
 	 * 
 	 */
 	var jsonToQueryString = function (json) {
-	    return '&' + 
+	    return '' + 
 	        Object.keys(json).map(function(key) {
 	            return encodeURIComponent(key) + '=' +
 	                encodeURIComponent(json[key]);
