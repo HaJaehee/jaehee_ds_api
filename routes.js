@@ -191,7 +191,7 @@ exports.configure = function (app) {
 				res.send({ error : err1});
 				return;
 			}
-			EPCIS.setURL (epcis.epcisname, {'epcisurl':EPCIS_Address}, function(err2, results){
+			EPCIS.setURL (epcis.epcisname, {'epcisurl':req.body.epcisurl}, function(err2, results){
 				if(err2) {
 					return res.send({ error : err2});
 				}

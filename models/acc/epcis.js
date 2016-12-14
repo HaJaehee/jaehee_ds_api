@@ -193,6 +193,8 @@ EPCIS.del = function (username, epcisname, callback) {
           'MATCH (epcis:EPCIS {epcisname: {thisEPCISname}})',
           'MATCH (epcis)<-[:possess]-(user:User {username: {thisUsername}})',
           'DETACH DELETE epcis',
+          'WITH count(epcis) as dummy',
+ 	      'MATCH (n) WHERE NOT (n)--() DELETE (n)',
     ].join('\n');
 
     var params = {
@@ -384,9 +386,6 @@ EPCIS.create = function (props, callback) {
 
 EPCIS.setURL = function (epcisname, epcisurl_props, callback) {
     var query = [
-        'MATCH (epcis:EPCIS {epcisname:{thisEPCISName}}) -[rel:hasURL]-> (other)',
-        'DELETE rel',
-        'WITH count(epcis) as dummy',
         'MATCH (epcisurl:EPCISURL {epcisurl:{thisEPCISURL}})',
         'RETURN epcisurl',
     ].join('\n');
@@ -415,36 +414,51 @@ EPCIS.setURL = function (epcisname, epcisurl_props, callback) {
         var query = null;
         if (results.length !== null && results.length > 0){
         	query = [
-	             'MATCH (epcis:EPCIS {epcisname:{thisEPCISName}})',
-	             'MATCH (epcisurl:EPCISURL {epcisurl: {thisEPCISURL}})',
-	             'MERGE (epcis) -[:hasURL]-> (epcisurl)',
-	             'WITH count(epcis) as dummy',
-        	     'MATCH (n) WHERE NOT (n)--() DELETE (n)',
-	         ].join('\n');
+    	             'MATCH (epcis:EPCIS {epcisname:{thisEPCISName}})',
+    	             'DETACH DELETE epcis'
+    	         ].join('\n');
+        	
+        	var params = {
+            	    thisEPCISName: epcisname,
+             };
+
+             db2.cypher({
+                 query: query,
+                 params: params,
+             }, function (err, results) {
+                 err = new errors.ValidationError('The epcisurl ‘' + validate(epcisurl_props).epcisurl + '’ is already exist.');
+             	 return callback(err);
+             });
+
         } else if (results.length !== null && results.length == 0){
         	query = [
+        	     'MATCH (epcis:EPCIS {epcisname:{thisEPCISName}}) -[rel:hasURL]-> (other)',
+        	     'DELETE rel',
+        	     'WITH count(epcis) as dummy',
 	             'MATCH (epcis:EPCIS {epcisname:{thisEPCISName}})',
 	             'CREATE (epcisurl:EPCISURL {epcisurl: {thisEPCISURL}})',
 	             'MERGE (epcis) -[:hasURL]-> (epcisurl)',
-	             'WITH count(epcis) as dummy',
+	             'WITH count(epcis) as dummy2',
         	     'MATCH (n) WHERE NOT (n)--() DELETE (n)',
 	         ].join('\n');
+        	
+        	var params = {
+            	    thisEPCISName: epcisname,
+            	    thisEPCISURL: epcisurl_props.epcisurl,
+             };
+
+             db2.cypher({
+                 query: query,
+                 params: params,
+             }, function (err, results) {
+                 if (err) {
+
+                 	return callback(err);
+                 }
+                 return callback(null, 'success');
+             });
         }
-    	var params = {
-    	    thisEPCISName: epcisname,
-    	    thisEPCISURL: epcisurl_props.epcisurl,
-         };
-
-         db2.cypher({
-             query: query,
-             params: params,
-         }, function (err, results) {
-             if (err) {
-
-             	return callback(err);
-             }
-             return callback(null, 'success');
-         });
+    	
     });
 };
 
