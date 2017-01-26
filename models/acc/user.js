@@ -340,7 +340,7 @@ User.prototype.furnish = function (other, callback) {
 User.prototype.subscribe = function (other, callback) {
     var query = [
         'MATCH (user:User {username: {thisUsername}})',
-        'MATCH (other:EPCIS{epcisname: {otherEPCISname}})',
+        'MATCH (other:EPCIS {epcisname: {otherEPCISname}})',
         'MERGE (user) -[rel:subscribe]-> (other)',
     ].join('\n');
 
@@ -386,6 +386,119 @@ User.prototype.unpossess = function (other, callback) {
     });
 };
 
+/** 
+ * setAccessible
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+
+User.prototype.setAccessible = function (other, callback) {
+	var query = [
+	    'MATCH (user:User {username: {thisUsername}})',
+	    'MATCH (other:User {username: {otherUsername}})',
+	    'MERGE (user)<-[:accessible]-(other)',
+	].join('\n');
+	
+	var params = {
+		thisUsername: this.username,
+		otherUsername: other.username,
+	};
+	
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err) {
+		callback(err);
+	});
+};
+
+
+/** 
+ * resetAccessible
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+User.prototype.resetAccessible = function (other, callback) {
+	var query = [
+ 	    'MATCH (:User {username: {thisUsername}})<-[rel:accessible]-(:User {username: {otherUsername}})',
+ 	    'DELETE rel',
+ 	].join('\n');
+ 	
+ 	var params = {
+ 		thisUsername: this.username,
+ 		otherUsername: other.username,
+ 	};
+ 	
+ 	db.cypher({
+ 		query: query,
+ 		params: params,
+ 	}, function (err) {
+ 		callback(err);
+ 	});
+};
+
+/** 
+ * setGroupAccessible
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+
+User.prototype.setGroupAccessible = function (othergroup, callback) {
+	var query = [
+ 	    'MATCH (user:User {username: {thisUsername}})',
+ 	    'MATCH (other:Group {groupname: {otherGroupname}})',
+ 	    'MERGE (user) <-[:accessible]- (other)',
+ 	].join('\n');
+ 	
+ 	var params = {
+ 		thisUsername: this.username,
+ 		otherGroupname: othergroup.groupname,
+ 	};
+ 	
+ 	db.cypher({
+ 		query: query,
+ 		params: params,
+ 	}, function (err) {
+ 		callback(err);
+ 	});
+};
+
+
+/** 
+ * resetGroupAccessible
+ * @creator Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+User.prototype.resetGroupAccessible = function (othergroup, callback) {
+	var query = [
+  	    'MATCH (:User {username: {thisUsername}})<-[rel:accessible]-(:Group {groupname: {otherGroupname}})',
+  	    'DELETE rel'
+  	].join('\n');
+  	
+  	var params = {
+  		thisUsername: this.username,
+  		otherGroupname: othergroup.groupname,
+  	};
+  	
+  	db.cypher({
+  		query: query,
+  		params: params,
+  	}, function (err) {
+  		callback(err);
+  	});
+};
 
 User.get = function (username, callback) {
     var query = [
@@ -651,7 +764,7 @@ User.getJoin = function (username, callback) {
 
         var joinedgroups = [];
 
-        for (var i = 0; i < results.length; i++) {
+        for (var i = 0; i < results.length ; i++) {
         	var joinedgroup = new Group(results[i]['group']);
         	if(!joinedgroup.groupname){
         		return callback("Group exists, but its groupname does not exist");
@@ -660,6 +773,216 @@ User.getJoin = function (username, callback) {
         }
         callback(null, joinedgroups);
     });
+};
+
+/** 
+ * getAccessUser
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+User.getAccessUser = function (username, callback) {
+	var query = [
+         'MATCH (:User {username: {thisUsername}})-[:accessible]->(user:User)',
+         'RETURN user',
+    ].join('\n');
+	
+	var params = {
+		thisUsername: username,	
+	};
+	
+	var user = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessUsers = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessUser = new User(results[i]['user']);
+			if (!accessUser.username) {
+				return callback("User exists, but its username does not exist");
+			}
+			accessUsers.push(accessUser.username);
+		}
+		callback(null, accessUsers);
+	});
+};
+
+
+/** 
+ * getAccessibleUser
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+User.getAccessibleUser = function (username, callback) {
+	var query = [
+         'MATCH (:User {username: {thisUsername}})<-[:accessible]-(user:User)',
+         'RETURN user',
+    ].join('\n');
+	
+	var params = {
+		thisUsername: username,	
+	};
+	
+	var user = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessibleUsers = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessibleUser = new User(results[i]['user']);
+			if (!accessibleUser.username) {
+				return callback("User exists, but its username does not exist");
+			}
+			accessibleUsers.push(accessibleUser.username);
+		}
+		callback(null, accessibleUsers);
+	});
+};
+
+/** 
+ * getAccessibleOthersUser
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.26
+ * 
+ */ 
+User.getAccessibleOthersUser = function (username, callback) {
+	var query = [
+         'MATCH (user:User)',
+         'WHERE not((user)-[:accessible]->(:User {username: {thisUsername}}))',
+         'RETURN user',
+    ].join('\n');
+	
+	var params = {
+		thisUsername: username,	
+	};
+	
+	var user = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessibleOthersUser = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessibleOtherUser = new User(results[i]['user']);
+			if (!accessibleOtherUser.username) {
+				return callback("User exists, but its username does not exist");
+			}
+			if (accessibleOtherUser.username !== username) {
+				accessibleOthersUser.push(accessibleOtherUser.username);
+			}
+		}
+		callback(null, accessibleOthersUser);
+	});
+};
+
+/** 
+ * getAccessibleGroup
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.26
+ * 
+ */ 
+User.getAccessibleGroup = function (username, callback) {
+	var query = [
+         'MATCH (:User {username: {thisUsername}})<-[:accessible]-(group:Group)',
+         'RETURN group',
+    ].join('\n');
+	
+	var params = {
+		thisUsername: username,	
+	};
+	
+	var user = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessibleGroups = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessibleGroup = new Group(results[i]['group']);
+			if (!accessibleGroup.groupname) {
+				return callback("User exists, but its groupname does not exist");
+			}
+			
+			accessibleGroups.push(accessibleGroup.groupname);
+			
+		}
+		callback(null, accessibleGroups);
+	});
+};
+
+/** 
+ * getAccessibleOthersGroup
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.26
+ * 
+ */ 
+User.getAccessibleOthersGroup = function (username, callback) {
+	var query = [
+         'MATCH (group:Group)',
+         'WHERE (group)<-[:manage]-(:User {username: {thisUsername}})',
+         'AND not((group)-[:accessible]->(:User {username: {thisUsername}}))',
+         'RETURN group',
+    ].join('\n');
+	
+	var params = {
+		thisUsername: username,	
+	};
+	
+	var user = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessibleOthersGroup = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessibleOtherGroup = new Group(results[i]['group']);
+			if (!accessibleOtherGroup.groupname) {
+				return callback("User exists, but its groupname does not exist");
+			}
+			if (accessibleOtherGroup.groupname !== (username+':public')) {
+				accessibleOthersGroup.push(accessibleOtherGroup.groupname);
+			}
+		}
+		callback(null, accessibleOthersGroup);
+	});
 };
 
 // Creates the user and persists (saves) it to the db, incl. indexing it:

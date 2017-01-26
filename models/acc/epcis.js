@@ -13,6 +13,8 @@
  * 2016.11.11
  * added epcisurl properties
  * 2016.11.29
+ * added EVENTTYPE, MAXIMUMCOUNT, GE_EVENTTYPE Constraints
+ * 2017.01.16
  */
 var neo4j = require('neo4j');
 var errors = require('./errors');
@@ -354,6 +356,12 @@ EPCIS.F = function (epcisname, callback) {
 EPCIS.create = function (props, callback) {
     var query = [
         'CREATE (epcis:EPCIS {props})',
+        'CREATE (eventtype:EVENTTYPE {props})',
+        'CREATE (maximumcount:MAXIMUMCOUNT {props})',
+        'CREATE (ge_eventtime:GE_EVENTTIME {props})',
+        'MERGE (epcis)-[:has]->(eventtime)',
+        'MERGE (epcis)-[:has]->(maximumcount)',
+        'MERGE (epcis)-[:has]->(ge_eventtime)',
         'RETURN epcis',
     ].join('\n');
   
@@ -1017,3 +1025,56 @@ db.createConstraint({
  }
 });
 
+//Register our unique EPCISURL constraint.
+//TODO: This is done async'ly (fire and forget) here for simplicity,
+//but this would be better as a formal schema migration script or similar.
+db.createConstraint({
+label: 'EVENTTYPE',
+property: 'epcisname',
+
+}, function (err, constraint) {
+if (err) {
+	throw err;     // Failing fast for now, by crash the application.
+}
+if (constraint) {
+   console.log('(Registered unique eventtypes constraint.)');
+} else {
+   // Constraint already present; no need to log anything.
+}
+});
+
+//Register our unique EPCISURL constraint.
+//TODO: This is done async'ly (fire and forget) here for simplicity,
+//but this would be better as a formal schema migration script or similar.
+db.createConstraint({
+label: 'MAXIMUMCOUNT',
+property: 'epcisname',
+
+}, function (err, constraint) {
+if (err) {
+	throw err;     // Failing fast for now, by crash the application.
+}
+if (constraint) {
+   console.log('(Registered unique maximumcounts constraint.)');
+} else {
+   // Constraint already present; no need to log anything.
+}
+});
+
+//Register our unique EPCISURL constraint.
+//TODO: This is done async'ly (fire and forget) here for simplicity,
+//but this would be better as a formal schema migration script or similar.
+db.createConstraint({
+label: 'GE_EVENTTIME',
+property: 'epcisname',
+
+}, function (err, constraint) {
+if (err) {
+	throw err;     // Failing fast for now, by crash the application.
+}
+if (constraint) {
+   console.log('(Registered unique ge_eventtimes constraint.)');
+} else {
+   // Constraint already present; no need to log anything.
+}
+});

@@ -503,6 +503,46 @@ Group.getSubscribe = function (groupname, callback) {
     });
 };
 
+/** 
+ * getAccessible
+ * @modifier Jaehee Ha
+ * lovesm135@kaist.ac.kr
+ * created
+ * 2017.01.16
+ * 
+ */ 
+Group.getAccessible = function (groupname, callback) {
+	var query = [
+         'MATCH (Group {groupname: {thisGroupname}})-[:accessible]->(user:User)',
+         'RETURN user',
+    ].join('\n');
+	
+	var params = {
+		thisGroupname: groupname,	
+	};
+	
+	var group = this;
+	db.cypher({
+		query: query,
+		params: params,
+	}, function (err, results) {
+		if (err) {
+			return callback(err);
+		}
+		
+		var accessibleUsers = [];
+		
+		for (var i = 0; i < results.length ; i++) {
+			var accessibleUser = new User(results[i]['user']);
+			if (!accessibleUser.username) {
+				return callback("User exists, but its username does not exist");
+			}
+			accessibleUsers.push(accessibleUser.username);
+		}
+		callback(null, accessibleUsers);
+	});
+};
+
 // Creates the group and persists (saves) it to the db, incl. indexing it:
 Group.create = function(props, callback) {
 	var query = [ 'CREATE (group:Group {props})', 

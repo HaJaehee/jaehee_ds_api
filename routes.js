@@ -91,11 +91,26 @@ exports.configure = function (app) {
 							if(err) {
 								return res.send({error:err});
 							}
-							User.getClientToken(req.params.username, function (err, clienttoken){
+							User.getAccessibleUser(req.params.username, function (err, accessibleusers){
 								if(err) {
 									return res.send({error:err});
 								}
-								res.send({epciss:epciss, epcisfurns:epcisfurns, epcissubss:epcissubss, groups:groups, joinedgroups:joinedgroups, clienttoken:clienttoken});
+								User.getAccessibleGroup(req.params.username, function (err, accessiblegroups){
+									if(err) {
+										return res.send({error:err});
+									}
+									User.getClientToken(req.params.username, function (err, clienttoken){
+										if(err) {
+											return res.send({error:err});
+										}
+										User.getAccessUser(req.params.username, function (err, accessusers){
+											if(err) {
+												return res.send({error:err});
+											}
+											res.send({epciss:epciss, epcisfurns:epcisfurns, epcissubss:epcissubss, groups:groups, joinedgroups:joinedgroups, accessibleusers:accessibleusers, accessiblegroups:accessiblegroups, accessusers:accessusers, clienttoken:clienttoken});
+										});
+									});
+								});
 							});
 						});
 					});
@@ -616,6 +631,153 @@ exports.configure = function (app) {
 	});
 	
 	//---subscribe features end---
+	
+	//---access features---	
+	
+	/** 
+	 * get /addaccessibleuser/:username/other
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.get('/addaccessibleuser/:username/other', app.oauth.authorise(), function (req, res){
+		User.getAccessibleOthersUser(req.params.username, function (err, accessibleothers) {
+			if (err) {
+				return res.send({error:err});
+			}
+			res.send({others:accessibleothers});
+		});
+	});
+	
+	/** 
+	 * post /addaccessibleuser/:accessibleusername
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.post('/addaccessibleuser/:accessibleusername', app.oauth.authorise(), function (req, res){
+		User.get(req.body.username, function (err, user) {
+			if (err) {
+				return res.send({error:err});
+			}
+			user.setAccessible({username:req.params.accessibleusername}, function (err1, result) {
+				if (err1) {
+					return res.send({error:err1});
+				}
+				res.send({response:"yes"});
+			});				
+		});
+	});
+	
+	/** 
+	 * del /resetaccessibleuser/:accessibleusername
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.del('/resetaccessibleuser/:accessibleusername',  app.oauth.authorise(), function (req, res){
+		User.get(req.body.username, function (err, user) {
+			if (err) {
+				return res.send({error:err});
+			}
+			user.resetAccessible({username:req.params.accessibleusername}, function (err1, result) {
+				if (err1) {
+					return res.send({error:err1});
+				}
+				res.send({response:"yes"});
+			});				
+		});
+	});
+	
+	/** 
+	 * get /addaccessiblegroup/:username/othergroup
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	app.get('/addaccessiblegroup/:username/othergroup', app.oauth.authorise(), function (req, res){
+		User.getAccessibleOthersGroup(req.params.username, function (err, accessibleothersgroup) {
+			if (err) {
+				return res.send({error:err});
+			}
+			res.send({othersgroup:accessibleothersgroup});
+		});
+	});
+	
+	/** 
+	 * post /addaccessiblegroup/:accessiblegroupname
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.post('/addaccessiblegroup/:accessiblegroupname', app.oauth.authorise(), function (req, res){
+		Group.isManager(req.body.username, req.params.accessiblegroupname, function (err, results) {
+			if (err){
+				return res.send({ error : err});
+			}
+			if (results.result === 'yes') {
+				User.get(req.body.username, function (err1, user) {
+					if (err1) {
+						return res.send({error:err1});
+					}
+					user.setGroupAccessible({groupname:req.params.accessiblegroupname}, function (err2, result) {
+						if (err2) {
+							return res.send({error:err2});
+						}
+						res.send({response:"yes"});
+					});				
+				});
+			}
+		});
+	});
+	
+	/** 
+	 * del /resetaccessiblegroup/:accessiblegroupname
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.del('/resetaccessiblegroup/:accessiblegroupname',  app.oauth.authorise(), function (req, res){
+		
+		Group.isManager(req.body.username, req.params.accessiblegroupname, function (err, results) {
+			if (err){
+				return res.send({ error : err});
+			}
+			if (results.result === 'yes') {
+				User.get(req.body.username, function (err1, user) {
+					if (err1) {
+						return res.send({error:err1});
+					}
+					user.resetGroupAccessible({groupname:req.params.accessiblegroupname}, function (err2, result) {
+						if (err2) {
+							return res.send({error:err2});
+						}
+						res.send({response:"yes"});
+					});				
+				});
+			}
+		});
+	});
+	
+	//---access features end---
+	
 	//---capture features---
 	
 	/** 
