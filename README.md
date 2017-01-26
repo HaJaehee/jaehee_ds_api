@@ -9,7 +9,6 @@ Version 4.0.0 <br/>
 OAuth 2.0 is applied.<br/>
 ###1.0.0:
 Token based access control is applied.<br/>
-HTTPS is applied.<br/>
 EPCIS name based management is implemented.<br/>
 Individual Role Based Access Control for EPCIS Access Authorization is implemented.<br/>
 ###2.0.0:
