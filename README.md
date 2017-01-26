@@ -1,18 +1,24 @@
 
 
 # EPCIS Access Control API Server
-Version 3.0.0 <br/>
-2016.11.29<br/>
+Version 4.0.0 <br/>
+2017.1.26<br/>
 
 
 ## Features
 OAuth 2.0 is applied.<br/>
+###1.0.0:
 Token based access control is applied.<br/>
+HTTPS is applied.<br/>
 EPCIS name based management is implemented.<br/>
 Individual Role Based Access Control for EPCIS Access Authorization is implemented.<br/>
+###2.0.0:
 Group management is implemented.<br/>
 Group Role Based Access Control for EPCIS Access Authorization is implemented.<br/>
+###3.0.0:
 EPCIS URL management is implemented.<br/>
+###4.0.0:
+'Accessible for users' permission is implemented.<br/>
 
 
 ## Usage
