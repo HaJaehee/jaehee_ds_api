@@ -1014,6 +1014,23 @@ exports.configure = function (app) {
 		});
 	});
 	
+	/** 
+	 * get /joinedgroup/:joinedgroupname/access
+	 * @creator Jaehee Ha
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.02.01
+	 * 
+	 */
+	app.get('/joinedgroup/:joinedgroupname/access', app.oauth.authorise(), function (req, res){
+		Group.getAccess(req.params.joinedgroupname, function (err, accessusers){
+			if(err) {
+				return res.send({error:err});
+			}
+			res.send({accessusers:accessusers});
+		});
+	});
+	
 	app.post('/user/:username/manage', app.oauth.authorise(), function (req, res){
 		var groupname = req.body.groupname;
 		if(groupname.indexOf(req.params.username+':') !== 0){

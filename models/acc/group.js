@@ -504,16 +504,16 @@ Group.getSubscribe = function (groupname, callback) {
 };
 
 /** 
- * getAccessible
+ * getAccess
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
  * 2017.01.16
  * 
  */ 
-Group.getAccessible = function (groupname, callback) {
+Group.getAccess = function (groupname, callback) {
 	var query = [
-         'MATCH (Group {groupname: {thisGroupname}})-[:accessible]->(user:User)',
+         'MATCH (:Group {groupname: {thisGroupname}})-[:accessible]->(user:User)',
          'RETURN user',
     ].join('\n');
 	
@@ -530,16 +530,16 @@ Group.getAccessible = function (groupname, callback) {
 			return callback(err);
 		}
 		
-		var accessibleUsers = [];
+		var accessUsers = [];
 		
 		for (var i = 0; i < results.length ; i++) {
-			var accessibleUser = new User(results[i]['user']);
-			if (!accessibleUser.username) {
+			var accessUser = results[i]['user'].properties;
+			if (!accessUser.username) {
 				return callback("User exists, but its username does not exist");
 			}
-			accessibleUsers.push(accessibleUser.username);
+			accessUsers.push(accessUser.username);
 		}
-		callback(null, accessibleUsers);
+		callback(null, accessUsers);
 	});
 };
 
