@@ -103,7 +103,7 @@ exports.configure = function (app) {
 										if(err) {
 											return res.send({error:err});
 										}
-										User.getAccessUser(req.params.username, function (err, accessusers){
+										User.getAccess(req.params.username, function (err, accessusers){
 											if(err) {
 												return res.send({error:err});
 											}
@@ -633,6 +633,44 @@ exports.configure = function (app) {
 	//---subscribe features end---
 	
 	//---access features---	
+	
+	/** 
+	 * get /user/:username/access
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017.01.26
+	 * 
+	 */ 
+	
+	app.get('/user/:username/access', app.oauth.authorise(), function (req, res){
+		var results = [];
+		User.getAccess(req.params.username, function (err, accessusers){
+			if(err) {
+				return res.send({error:err});
+			}
+			for (var i = 0 ; i<accessusers.length ; i++) { 
+				results.push(accessusers[i]);
+			}
+			User.getJoin(req.params.username, function (err, joinedgroups){
+				if(err) {
+					return res.send({error:err});
+				}
+				for (var i = 0 ; i<joinedgroups.length ; i++) { 
+					Group.getAccess(joinedgroups[i], function (err, groupaccessusers){
+						if(err) {
+							return res.send({error:err});
+						}
+						for (var j = 0 ; j<groupaccessusers.length ; j++) { 
+							results.push(groupaccessusers[j]);
+						}
+					});
+				}
+				console.log(results);
+				res.send({accessusers:results});
+			});
+		});
+	});
 	
 	/** 
 	 * get /addaccessibleuser/:username/other
@@ -1307,7 +1345,12 @@ exports.configure = function (app) {
 			    				if(err) {
 			    					return res.send({ error : err});
 			    				}
-			    			    res.send({result: "success"});
+			    				user.setAccessible({'username':req.body.username}, function(err, result){
+			    					if(err) {
+				    					return res.send({ error : err});
+				    				}
+			    					res.send({result: "success"});
+			    				});
 			    			});
 		    			});
 		    		});

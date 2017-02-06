@@ -776,14 +776,14 @@ User.getJoin = function (username, callback) {
 };
 
 /** 
- * getAccessUser
+ * getAccess
  * @modifier Jaehee Ha
  * lovesm135@kaist.ac.kr
  * created
  * 2017.01.16
  * 
  */ 
-User.getAccessUser = function (username, callback) {
+User.getAccess = function (username, callback) {
 	var query = [
          'MATCH (:User {username: {thisUsername}})-[:accessible]->(user:User)',
          'RETURN user',
