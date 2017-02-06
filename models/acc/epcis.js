@@ -359,7 +359,7 @@ EPCIS.create = function (props, callback) {
         'CREATE (eventtype:EVENTTYPE {props})',
         'CREATE (maximumcount:MAXIMUMCOUNT {props})',
         'CREATE (ge_eventtime:GE_EVENTTIME {props})',
-        'MERGE (epcis)-[:has]->(eventtime)',
+        'MERGE (epcis)-[:has]->(eventtype)',
         'MERGE (epcis)-[:has]->(maximumcount)',
         'MERGE (epcis)-[:has]->(ge_eventtime)',
         'RETURN epcis',
