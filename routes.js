@@ -252,7 +252,7 @@ exports.configure = function (app) {
 							return res.send({error: err});
 						}
 						var epcisevent = req.body.epcisevent;
-						var EPCIS_Capture_Address = "http://"+epcisurl+EPCIS_CaptureURL;
+						var EPCIS_Capture_Address = "http://"+epcisurl+"/epcis/Service/DeleteEPCIS";
 						rest.delOperation(EPCIS_Capture_Address, "" , req.body.epcisname, function (error, response) {
 							if (error) {
 								return res.send({error: error});

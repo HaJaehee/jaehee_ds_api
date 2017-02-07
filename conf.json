@@ -9,7 +9,7 @@
     "NEO_ADDRESS": "127.0.0.1:7474",
     "DNS_ADDRESS": "8.8.8.8",
     "EPCIS_ADDRESS": "127.0.0.1:8080",
-    "EPCIS_CAPTURE_URL": "/epcis/Service/AccessEventCapture",
+    "EPCIS_CAPTURE_URL": "/epcis/Service/EventCapture",
     "EPCIS_QUERY_URL": "/epcis/Service/Poll/SimpleEventQuery?",
     "REDIS_DEFAULT_EXPIRE": 1200
 }
